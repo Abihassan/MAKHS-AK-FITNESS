@@ -61,18 +61,13 @@ export default function DatasetExerciseBrowserScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const params = route.params as DatasetRouteParams | undefined;
+  const params =
+    route.params as DatasetRouteParams | undefined;
 
   const dataset = params?.dataset;
   const equipment = params?.equipment;
   const target = params?.target;
 
-  /*
-   * Safety check.
-   *
-   * DatasetExerciseBrowser should always be opened
-   * through navigation with a dataset parameter.
-   */
   if (!dataset) {
     return (
       <View style={styles.container}>
@@ -93,7 +88,7 @@ export default function DatasetExerciseBrowserScreen() {
   );
 
   /*
-   * Apply equipment and target filters.
+   * Apply the current filters.
    */
   const filteredExercises = useMemo(() => {
     return exercises.filter((exercise) => {
@@ -118,11 +113,7 @@ export default function DatasetExerciseBrowserScreen() {
   }, [exercises, equipment, target]);
 
   /*
-   * LEVEL 1
-   *
-   * Dataset
-   *    ↓
-   * Equipment
+   * Dataset → Equipment
    */
   const equipmentList = useMemo(() => {
     return Array.from(
@@ -135,11 +126,7 @@ export default function DatasetExerciseBrowserScreen() {
   }, [exercises]);
 
   /*
-   * LEVEL 2
-   *
-   * Equipment
-   *    ↓
-   * Target
+   * Equipment → Target
    */
   const targetList = useMemo(() => {
     if (!equipment) {
@@ -155,9 +142,6 @@ export default function DatasetExerciseBrowserScreen() {
     ).sort();
   }, [equipment, filteredExercises]);
 
-  /*
-   * Dataset title.
-   */
   const datasetTitle =
     dataset === "cardio"
       ? "Cardio"
@@ -166,11 +150,10 @@ export default function DatasetExerciseBrowserScreen() {
         : "No Equipment";
 
   /*
+   * =====================================================
    * LEVEL 3
-   *
-   * Equipment + Target
-   *    ↓
-   * Exercises
+   * Equipment + Target → Exercises
+   * =====================================================
    */
   if (equipment && target) {
     return (
@@ -184,8 +167,11 @@ export default function DatasetExerciseBrowserScreen() {
         </Text>
 
         <FlatList
+          key="exercise-list"
           data={filteredExercises}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item) =>
+            String(item.id)
+          }
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
@@ -218,10 +204,10 @@ export default function DatasetExerciseBrowserScreen() {
   }
 
   /*
+   * =====================================================
    * LEVEL 2
-   *
-   * Equipment selected.
-   * Show target muscles.
+   * Equipment → Target
+   * =====================================================
    */
   if (equipment) {
     return (
@@ -235,6 +221,7 @@ export default function DatasetExerciseBrowserScreen() {
         </Text>
 
         <FlatList
+          key="target-list"
           data={targetList}
           keyExtractor={(item) => item}
           numColumns={2}
@@ -242,11 +229,13 @@ export default function DatasetExerciseBrowserScreen() {
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
-            const count = filteredExercises.filter(
-              (exercise) =>
-                normalize(exercise.target) ===
-                normalize(item),
-            ).length;
+            const count =
+              filteredExercises.filter(
+                (exercise) =>
+                  normalize(
+                    exercise.target,
+                  ) === normalize(item),
+              ).length;
 
             return (
               <TouchableOpacity
@@ -279,10 +268,10 @@ export default function DatasetExerciseBrowserScreen() {
   }
 
   /*
+   * =====================================================
    * LEVEL 1
-   *
-   * Dataset selected.
-   * Show equipment.
+   * Dataset → Equipment
+   * =====================================================
    */
   return (
     <View style={styles.container}>
@@ -295,6 +284,7 @@ export default function DatasetExerciseBrowserScreen() {
       </Text>
 
       <FlatList
+        key="equipment-list"
         data={equipmentList}
         keyExtractor={(item) => item}
         numColumns={2}
@@ -304,8 +294,9 @@ export default function DatasetExerciseBrowserScreen() {
         renderItem={({ item }) => {
           const count = exercises.filter(
             (exercise) =>
-              normalize(exercise.equipment) ===
-              normalize(item),
+              normalize(
+                exercise.equipment,
+              ) === normalize(item),
           ).length;
 
           return (
