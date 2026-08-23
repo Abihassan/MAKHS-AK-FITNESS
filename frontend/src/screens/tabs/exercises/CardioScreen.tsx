@@ -1,24 +1,77 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-const CardioScreen = () => (
-  <View style={styles.container}>
-    <Text style={styles.title}>Cardio Workouts</Text>
-  </View>
-);
-export default CardioScreen;
+export default function CardioScreen() {
+  const navigation = useNavigation<any>();
 
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>
+        Cardio
+      </Text>
+
+      <Text style={styles.subtitle}>
+        Browse the exercises from the dataset.
+      </Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        activeOpacity={0.8}
+        onPress={() =>
+          navigation.navigate(
+            "DatasetExerciseBrowser",
+            {
+              dataset: "cardio",
+            },
+          )
+        }
+      >
+        <Text style={styles.buttonText}>
+          Browse Cardio Exercises
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#F6F7FB",
+    padding: 20,
+    justifyContent: "center",
   },
+
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 30,
+    fontWeight: "800",
     color: "#0F172A",
+    marginBottom: 8,
+  },
+
+  subtitle: {
+    fontSize: 15,
+    color: "#64748B",
+    marginBottom: 24,
+  },
+
+  button: {
+    backgroundColor: "#0F172A",
+    borderRadius: 16,
+    paddingVertical: 17,
+    paddingHorizontal: 20,
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
   },
 });

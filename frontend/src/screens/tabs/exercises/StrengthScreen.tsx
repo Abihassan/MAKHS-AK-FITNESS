@@ -5,54 +5,20 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { getStrengthExercises, uniqueValues } from "../../../data/exerciseData";
 
-/* ---------- DATA ---------- */
-const STRENGTH_MUSCLES = [
-  {
-    id: "1",
-    title: "Chest",
-    image: require("../../../../assets/strength/chest.png"),
-  },
-  {
-    id: "2",
-    title: "Back",
-    image: require("../../../../assets/strength/back.png"),
-  },
-  {
-    id: "3",
-    title: "Shoulders",
-    image: require("../../../../assets/strength/shoulder.png"),
-  },
-  {
-    id: "4",
-    title: "Legs",
-    image: require("../../../../assets/strength/leg.png"),
-  },
-  {
-    id: "5",
-    title: "Biceps",
-    image: require("../../../../assets/strength/biceps.png"),
-  },
-  {
-    id: "6",
-    title: "Triceps",
-    image: require("../../../../assets/strength/triceps.png"),
-  },
-];
+/* ---------- DATA FROM REAL LOCAL DATASET ---------- */
+const STRENGTH_MUSCLES = uniqueValues(
+  getStrengthExercises(),
+  "category",
+).map((category) => ({
+  id: category,
+  title: category,
+}));
 
 /* ---------- SCREEN MAPPING ---------- */
-const muscleScreens: { [key: string]: string } = {
-  Chest: "ChestVariations",
-  Back: "backVariations",
-  Shoulders: "shouldersVariations",
-  Legs: "legsVariations",
-  Biceps: "bicepsVariations",
-  Triceps: "tricepsVariations",
-};
-
 export default function StrengthScreen() {
   const navigation = useNavigation<any>();
 
@@ -72,17 +38,16 @@ export default function StrengthScreen() {
             style={styles.card}
             activeOpacity={0.85}
             onPress={() => {
-              const screen = muscleScreens[item.title];
-
-              if (screen) {
-                navigation.navigate(screen);
-              }
+              navigation.navigate("StrengthBrowser", {
+                category: item.title,
+              });
             }}
           >
-            <Image
-              source={item.image}
-              style={styles.cardImage}
-            />
+            <View style={styles.cardIcon}>
+              <Text style={styles.cardIconText}>
+                {item.title.charAt(0).toUpperCase()}
+              </Text>
+            </View>
 
             <Text style={styles.cardText}>
               {item.title}
@@ -123,10 +88,19 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  cardImage: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
+  cardIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  cardIconText: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: "#0F172A",
   },
 
   cardText: {

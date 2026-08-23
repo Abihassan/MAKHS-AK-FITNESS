@@ -28,6 +28,8 @@ import ChallengesScreen from "../screens/tabs/exercises/ChallengesScreen";
 import ChestVariationsScreen from "../screens/tabs/exercises/strength/ChestVariationsScreen";
 import ChestExercisesScreen from "../screens/tabs/exercises/strength/ChestExercisesScreen";
 import ExerciseDetailScreen from "../screens/tabs/exercises/strength/ExerciseDetailScreen";
+import StrengthBrowserScreen from "../screens/tabs/exercises/StrengthBrowserScreen";
+import DatasetExerciseBrowserScreen from "../screens/tabs/exercises/DatasetExerciseBrowserScreen";
 
 
 /* 🔥 STRENGTH FLOW SCREENS */
@@ -92,6 +94,8 @@ export default function ExerciseStack() {
 
       {/* CATEGORIES */}
       <Stack.Screen name="Strength" component={StrengthScreen} />
+      <Stack.Screen name="StrengthBrowser" component={StrengthBrowserScreen} />
+      <Stack.Screen name="DatasetExerciseBrowser" component={DatasetExerciseBrowserScreen} />
       <Stack.Screen name="Cardio" component={CardioScreen} />
       <Stack.Screen name="HIIT" component={HIITScreen} />
       <Stack.Screen name="Calisthenics" component={CalisthenicsScreen} />
