@@ -9,35 +9,61 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-/* ---------- DATA ---------- */
-const CHEST_VARIATIONS = [
+/* =========================================================
+   CHEST EQUIPMENT
+   ========================================================= */
+
+const CHEST_EQUIPMENT = [
   {
     id: "1",
-    title: "Upper Chest",
+    title: "Barbell",
     image: require("../../../../../assets/strength/chest.png"),
   },
   {
     id: "2",
-    title: "Middle Chest",
+    title: "Cable",
     image: require("../../../../../assets/strength/chest.png"),
   },
   {
     id: "3",
-    title: "Lower Chest",
+    title: "Dumbbell",
+    image: require("../../../../../assets/strength/chest.png"),
+  },
+  {
+    id: "4",
+    title: "Kettlebell",
+    image: require("../../../../../assets/strength/chest.png"),
+  },
+  {
+    id: "5",
+    title: "Leverage Machine",
+    image: require("../../../../../assets/strength/chest.png"),
+  },
+  {
+    id: "6",
+    title: "Smith Machine",
+    image: require("../../../../../assets/strength/chest.png"),
+  },
+  {
+    id: "7",
+    title: "Weighted",
     image: require("../../../../../assets/strength/chest.png"),
   },
 ];
 
-export default function ChestVariationsScreen() {
+/* =========================================================
+   SCREEN
+   ========================================================= */
+
+export default function ChestVariationScreen() {
   const navigation = useNavigation<any>();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Chest</Text>
 
-      {/* GRID (SAME AS ALL OTHER SCREENS) */}
       <FlatList
-        data={CHEST_VARIATIONS}
+        data={CHEST_EQUIPMENT}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -47,14 +73,20 @@ export default function ChestVariationsScreen() {
           <TouchableOpacity
             style={styles.card}
             activeOpacity={0.85}
-            onPress={() =>
+            onPress={() => {
               navigation.navigate("ChestExercises", {
-                variation: item.title,
-              })
-            }
+                equipment: item.title,
+              });
+            }}
           >
-            <Image source={item.image} style={styles.cardImage} />
-            <Text style={styles.cardText}>{item.title}</Text>
+            <Image
+              source={item.image}
+              style={styles.cardImage}
+            />
+
+            <Text style={styles.cardText}>
+              {item.title}
+            </Text>
           </TouchableOpacity>
         )}
       />
@@ -62,7 +94,10 @@ export default function ChestVariationsScreen() {
   );
 }
 
-/* ---------- STYLES (LOCKED GRID SYSTEM) ---------- */
+/* =========================================================
+   STYLES
+   ========================================================= */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -78,12 +113,10 @@ const styles = StyleSheet.create({
     color: "#0F172A",
   },
 
-  /* SAME ROW SPACING */
   row: {
     gap: 14,
   },
 
-  /* SAME CARD SIZE & POSITION */
   card: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -94,17 +127,15 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  /* SAME IMAGE SIZE */
   cardImage: {
     width: 100,
     height: 100,
     resizeMode: "contain",
   },
 
-  /* SAME TEXT STYLE */
   cardText: {
     marginTop: 10,
-    fontSize: 24,
+    fontSize: 21,
     fontWeight: "700",
     textAlign: "center",
     color: "#0F172A",

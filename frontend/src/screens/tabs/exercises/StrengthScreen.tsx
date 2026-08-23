@@ -11,12 +11,36 @@ import { useNavigation } from "@react-navigation/native";
 
 /* ---------- DATA ---------- */
 const STRENGTH_MUSCLES = [
-  { id: "1", title: "Chest", image: require("../../../../assets/strength/chest.png") },
-  { id: "2", title: "Back", image: require("../../../../assets/strength/back.png") },
-  { id: "3", title: "Shoulders", image: require("../../../../assets/strength/shoulder.png") },
-  { id: "4", title: "Legs", image: require("../../../../assets/strength/leg.png") },
-  { id: "5", title: "Biceps", image: require("../../../../assets/strength/biceps.png") },
-  { id: "6", title: "Triceps", image: require("../../../../assets/strength/triceps.png") },
+  {
+    id: "1",
+    title: "Chest",
+    image: require("../../../../assets/strength/chest.png"),
+  },
+  {
+    id: "2",
+    title: "Back",
+    image: require("../../../../assets/strength/back.png"),
+  },
+  {
+    id: "3",
+    title: "Shoulders",
+    image: require("../../../../assets/strength/shoulder.png"),
+  },
+  {
+    id: "4",
+    title: "Legs",
+    image: require("../../../../assets/strength/leg.png"),
+  },
+  {
+    id: "5",
+    title: "Biceps",
+    image: require("../../../../assets/strength/biceps.png"),
+  },
+  {
+    id: "6",
+    title: "Triceps",
+    image: require("../../../../assets/strength/triceps.png"),
+  },
 ];
 
 /* ---------- SCREEN MAPPING ---------- */
@@ -36,7 +60,6 @@ export default function StrengthScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Strength Training</Text>
 
-      {/* GRID */}
       <FlatList
         data={STRENGTH_MUSCLES}
         keyExtractor={(item) => item.id}
@@ -50,13 +73,20 @@ export default function StrengthScreen() {
             activeOpacity={0.85}
             onPress={() => {
               const screen = muscleScreens[item.title];
+
               if (screen) {
                 navigation.navigate(screen);
               }
             }}
           >
-            <Image source={item.image} style={styles.cardImage} />
-            <Text style={styles.cardText}>{item.title}</Text>
+            <Image
+              source={item.image}
+              style={styles.cardImage}
+            />
+
+            <Text style={styles.cardText}>
+              {item.title}
+            </Text>
           </TouchableOpacity>
         )}
       />
@@ -64,7 +94,6 @@ export default function StrengthScreen() {
   );
 }
 
-/* ---------- STYLES (LOCKED TO MATCH EXERCISES GRID) ---------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
