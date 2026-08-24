@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+
 import {
   Image,
   ScrollView,
@@ -6,19 +7,21 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { useRoute } from "@react-navigation/native";
 
-import {
-  getExerciseById,
-} from "../../../../data/exerciseData";
+import { getExerciseById } from "../../../../data/exerciseData";
 
-const titleCase = (value: string): string => {
+const titleCase = (value?: string | null): string => {
+  if (!value) {
+    return "Not available";
+  }
+
   return value
     .split(" ")
     .map(
-      (part) =>
-        part.charAt(0).toUpperCase() +
-        part.slice(1),
+      (part: string) =>
+        part.charAt(0).toUpperCase() + part.slice(1),
     )
     .join(" ");
 };
@@ -26,16 +29,15 @@ const titleCase = (value: string): string => {
 export default function ExerciseDetailScreen() {
   const route = useRoute<any>();
 
-  const exerciseId =
-    route.params?.exerciseId;
+  const exerciseId = route.params?.exerciseId;
 
-  const exercise = useMemo(
-    () =>
-      getExerciseById(
-        exerciseId,
-      ),
-    [exerciseId],
-  );
+  const exercise = useMemo(() => {
+    if (exerciseId === undefined || exerciseId === null) {
+      return undefined;
+    }
+
+    return getExerciseById(exerciseId);
+  }, [exerciseId]);
 
   if (!exercise) {
     return (
@@ -46,7 +48,7 @@ export default function ExerciseDetailScreen() {
 
         <Text style={styles.errorText}>
           No exercise was found for ID{" "}
-          {String(exerciseId)}.
+          {String(exerciseId ?? "")}.
         </Text>
       </View>
     );
@@ -56,14 +58,12 @@ export default function ExerciseDetailScreen() {
     exercise.instructions?.en;
 
   const englishSteps =
-    exercise.instruction_steps?.en;
+    exercise.instruction_steps?.en ?? [];
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={
-        styles.content
-      }
+      contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
       {/* =====================================================
@@ -75,26 +75,33 @@ export default function ExerciseDetailScreen() {
       </Text>
 
       {/* =====================================================
-          GIF
+          EXERCISE GIF
           ===================================================== */}
 
-      <View style={styles.gifContainer}>
-        <View style={styles.gifPlaceholder}>
-          <Text
-            style={styles.gifPlaceholderText}
-          >
-            Exercise animation
-          </Text>
-
-          <Text
-            style={
-              styles.gifPlaceholderPath
-            }
-          >
-            {exercise.gif_url ??
-              "No GIF available"}
-          </Text>
-        </View>
+      <View style={styles.mediaContainer}>
+        {exercise.gif_url ? (
+          <Image
+            source={{
+              uri: exercise.gif_url,
+            }}
+            style={styles.gif}
+            resizeMode="contain"
+          />
+        ) : exercise.image ? (
+          <Image
+            source={{
+              uri: exercise.image,
+            }}
+            style={styles.gif}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={styles.mediaPlaceholder}>
+            <Text style={styles.placeholderTitle}>
+              No animation available
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* =====================================================
@@ -102,53 +109,25 @@ export default function ExerciseDetailScreen() {
           ===================================================== */}
 
       <View style={styles.infoGrid}>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>
-            Equipment
-          </Text>
+        <InfoCard
+          label="Equipment"
+          value={titleCase(exercise.equipment)}
+        />
 
-          <Text style={styles.infoValue}>
-            {titleCase(
-              exercise.equipment,
-            )}
-          </Text>
-        </View>
+        <InfoCard
+          label="Target"
+          value={titleCase(exercise.target)}
+        />
 
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>
-            Target
-          </Text>
+        <InfoCard
+          label="Category"
+          value={titleCase(exercise.category)}
+        />
 
-          <Text style={styles.infoValue}>
-            {titleCase(
-              exercise.target,
-            )}
-          </Text>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>
-            Category
-          </Text>
-
-          <Text style={styles.infoValue}>
-            {titleCase(
-              exercise.category,
-            )}
-          </Text>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>
-            Body Part
-          </Text>
-
-          <Text style={styles.infoValue}>
-            {titleCase(
-              exercise.body_part,
-            )}
-          </Text>
-        </View>
+        <InfoCard
+          label="Body Part"
+          value={titleCase(exercise.body_part)}
+        />
       </View>
 
       {/* =====================================================
@@ -161,11 +140,13 @@ export default function ExerciseDetailScreen() {
             Muscle Group
           </Text>
 
-          <Text style={styles.sectionText}>
-            {titleCase(
-              exercise.muscle_group,
-            )}
-          </Text>
+          <View style={styles.tagContainer}>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>
+                {titleCase(exercise.muscle_group)}
+              </Text>
+            </View>
+          </View>
         </View>
       ) : null}
 
@@ -174,23 +155,23 @@ export default function ExerciseDetailScreen() {
           ===================================================== */}
 
       {exercise.secondary_muscles &&
-      exercise.secondary_muscles.length >
-        0 ? (
+      exercise.secondary_muscles.length > 0 ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Secondary Muscles
           </Text>
 
-          <View style={styles.chipContainer}>
+          <View style={styles.tagContainer}>
             {exercise.secondary_muscles.map(
-              (muscle, index) => (
+              (
+                muscle: string,
+                index: number,
+              ) => (
                 <View
                   key={`${muscle}-${index}`}
-                  style={styles.chip}
+                  style={styles.tag}
                 >
-                  <Text
-                    style={styles.chipText}
-                  >
+                  <Text style={styles.tagText}>
                     {titleCase(muscle)}
                   </Text>
                 </View>
@@ -201,44 +182,42 @@ export default function ExerciseDetailScreen() {
       ) : null}
 
       {/* =====================================================
-          DESCRIPTION
+          INSTRUCTIONS
           ===================================================== */}
 
       {englishInstructions ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Exercise Details
+            Instructions
           </Text>
 
-          <Text style={styles.description}>
+          <Text style={styles.instructions}>
             {englishInstructions}
           </Text>
         </View>
       ) : null}
 
       {/* =====================================================
-          INSTRUCTIONS
+          STEP-BY-STEP INSTRUCTIONS
           ===================================================== */}
 
-      {englishSteps &&
-      englishSteps.length > 0 ? (
+      {englishSteps.length > 0 ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             How To Perform
           </Text>
 
           {englishSteps.map(
-            (step, index) => (
+            (
+              step: string,
+              index: number,
+            ) => (
               <View
-                key={`step-${index}`}
-                style={styles.step}
+                key={`${index}-${step}`}
+                style={styles.stepRow}
               >
                 <View style={styles.stepNumber}>
-                  <Text
-                    style={
-                      styles.stepNumberText
-                    }
-                  >
+                  <Text style={styles.stepNumberText}>
                     {index + 1}
                   </Text>
                 </View>
@@ -253,17 +232,51 @@ export default function ExerciseDetailScreen() {
       ) : null}
 
       {/* =====================================================
-          ATTRIBUTION
+          DATASET ATTRIBUTION
           ===================================================== */}
 
       {exercise.attribution ? (
-        <Text style={styles.attribution}>
-          {exercise.attribution}
-        </Text>
+        <View style={styles.attributionBox}>
+          <Text style={styles.attributionText}>
+            {exercise.attribution}
+          </Text>
+        </View>
       ) : null}
+
+      <View style={styles.bottomSpace} />
     </ScrollView>
   );
 }
+
+/* =========================================================
+   INFO CARD
+   ========================================================= */
+
+type InfoCardProps = {
+  label: string;
+  value: string;
+};
+
+function InfoCard({
+  label,
+  value,
+}: InfoCardProps) {
+  return (
+    <View style={styles.infoCard}>
+      <Text style={styles.infoLabel}>
+        {label}
+      </Text>
+
+      <Text style={styles.infoValue}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+/* =========================================================
+   STYLES
+   ========================================================= */
 
 const styles = StyleSheet.create({
   container: {
@@ -272,8 +285,9 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 20,
-    paddingBottom: 50,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 40,
   },
 
   title: {
@@ -283,41 +297,50 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  gifContainer: {
+  /* =====================================================
+     MEDIA
+     ===================================================== */
+
+  mediaContainer: {
     width: "100%",
-    height: 300,
+    height: 280,
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
     marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
     elevation: 2,
   },
 
-  gifPlaceholder: {
+  gif: {
+    width: "100%",
+    height: "100%",
+  },
+
+  mediaPlaceholder: {
     flex: 1,
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    backgroundColor: "#E2E8F0",
   },
 
-  gifPlaceholderText: {
-    fontSize: 18,
+  placeholderTitle: {
+    fontSize: 16,
     fontWeight: "700",
-    color: "#334155",
+    color: "#64748B",
   },
 
-  gifPlaceholderPath: {
-    marginTop: 8,
-    fontSize: 12,
-    color: "#94A3B8",
-    textAlign: "center",
-  },
+  /* =====================================================
+     INFORMATION
+     ===================================================== */
 
   infoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 8,
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
 
   infoCard: {
@@ -325,13 +348,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 16,
+    marginBottom: 12,
     elevation: 1,
   },
 
   infoLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#64748B",
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
   infoValue: {
@@ -340,106 +364,134 @@ const styles = StyleSheet.create({
     color: "#0F172A",
   },
 
+  /* =====================================================
+     SECTIONS
+     ===================================================== */
+
   section: {
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
     padding: 18,
-    marginTop: 14,
-    elevation: 1,
+    marginTop: 10,
   },
 
   sectionTitle: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: "800",
     color: "#0F172A",
-    marginBottom: 12,
+    marginBottom: 14,
   },
 
-  sectionText: {
-    fontSize: 16,
-    color: "#334155",
-  },
+  /* =====================================================
+     TAGS
+     ===================================================== */
 
-  description: {
-    fontSize: 15,
-    lineHeight: 23,
-    color: "#334155",
-  },
-
-  chipContainer: {
+  tagContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
 
-  chip: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: 20,
+  tag: {
+    backgroundColor: "#EEF2FF",
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
 
-  chipText: {
-    fontSize: 13,
+  tagText: {
+    fontSize: 14,
     fontWeight: "600",
-    color: "#334155",
+    color: "#3730A3",
   },
 
-  step: {
+  /* =====================================================
+     INSTRUCTIONS
+     ===================================================== */
+
+  instructions: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: "#475569",
+  },
+
+  /* =====================================================
+     STEPS
+     ===================================================== */
+
+  stepRow: {
     flexDirection: "row",
-    marginBottom: 14,
     alignItems: "flex-start",
+    marginBottom: 16,
   },
 
   stepNumber: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "#0F172A",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
 
   stepNumberText: {
     color: "#FFFFFF",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "800",
   },
 
   stepText: {
     flex: 1,
     fontSize: 15,
-    lineHeight: 22,
-    color: "#334155",
+    lineHeight: 23,
+    color: "#475569",
     paddingTop: 3,
   },
 
-  attribution: {
+  /* =====================================================
+     ATTRIBUTION
+     ===================================================== */
+
+  attributionBox: {
+    marginTop: 18,
+    paddingHorizontal: 4,
+  },
+
+  attributionText: {
     fontSize: 11,
+    lineHeight: 17,
     color: "#94A3B8",
     textAlign: "center",
-    marginTop: 25,
   },
+
+  bottomSpace: {
+    height: 30,
+  },
+
+  /* =====================================================
+     ERROR
+     ===================================================== */
 
   errorContainer: {
     flex: 1,
     backgroundColor: "#F6F7FB",
-    justifyContent: "center",
     alignItems: "center",
-    padding: 30,
+    justifyContent: "center",
+    paddingHorizontal: 30,
   },
 
   errorTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: "#DC2626",
+    color: "#0F172A",
+    marginBottom: 10,
   },
 
   errorText: {
-    marginTop: 8,
     fontSize: 15,
     color: "#64748B",
     textAlign: "center",
+    lineHeight: 22,
   },
 });

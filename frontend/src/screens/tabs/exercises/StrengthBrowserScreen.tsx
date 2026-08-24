@@ -9,188 +9,429 @@ import {
   View,
 } from "react-native";
 
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 
 import {
   getStrengthExercises,
   normalize,
 } from "../../../data/exerciseData";
 
-import type { Exercise } from "../../../data/exerciseTypes";
-
-/* =========================================================
-   HELPERS
-========================================================= */
+import { Exercise } from "../../../data/exerciseTypes";
 
 const titleCase = (value: string): string => {
   return value
     .split(" ")
     .map(
-      (part: string) =>
+      (part) =>
         part.charAt(0).toUpperCase() + part.slice(1),
     )
     .join(" ");
 };
 
-/* =========================================================
-   SCREEN
-========================================================= */
+/*
+ * ============================================================
+ * LOCAL DATASET IMAGE
+ * ============================================================
+ *
+ * The JSON contains:
+ *
+ * image: "images/0372-jivWf8n.jpg"
+ *
+ * The actual file is inside:
+ *
+ * assets/images/images/
+ *
+ * React Native cannot dynamically require arbitrary
+ * filenames, so the safest offline approach is to use
+ * the local asset path only when it is available through
+ * the dataset mapping.
+ */
+
+const IMAGE_MAP: Record<string, any> = {
+  // Add generated mappings here if needed.
+  //
+  // Example:
+  //
+  // "images/0372-jivWf8n.jpg":
+  //   require("../../../../assets/images/images/0372-jivWf8n.jpg"),
+};
+
+const getLocalImage = (
+  imagePath?: string,
+): any | undefined => {
+  if (!imagePath) {
+    return undefined;
+  }
+
+  return IMAGE_MAP[imagePath];
+};
 
 export default function StrengthBrowserScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const category = route.params?.category ?? "";
+  const {
+    category,
+    equipment,
+    target,
+  } = route.params ?? {};
+
+  const strength = useMemo(
+    () => getStrengthExercises(),
+    [],
+  );
+
+  const filtered = useMemo(() => {
+    return strength.filter(
+      (exercise: Exercise) => {
+        if (
+          category &&
+          normalize(exercise.category) !==
+            normalize(category)
+        ) {
+          return false;
+        }
+
+        if (
+          equipment &&
+          normalize(exercise.equipment) !==
+            normalize(equipment)
+        ) {
+          return false;
+        }
+
+        if (
+          target &&
+          normalize(exercise.target) !==
+            normalize(target)
+        ) {
+          return false;
+        }
+
+        return true;
+      },
+    );
+  }, [
+    strength,
+    category,
+    equipment,
+    target,
+  ]);
 
   /*
-   * Load the REAL strength exercises from exercises.json.
+   * ==========================================================
+   * LEVEL
+   * ==========================================================
    */
-  const strengthExercises = useMemo<Exercise[]>(() => {
-    return getStrengthExercises();
-  }, []);
 
-  /*
-   * Filter by the selected dataset category.
-   *
-   * Example:
-   *
-   * Strength → Back
-   *              ↓
-   * getStrengthExercises()
-   *              ↓
-   * only category === "back"
-   */
-  const exercises = useMemo<Exercise[]>(() => {
+  const values = useMemo(() => {
     if (!category) {
-      return strengthExercises;
+      return Array.from(
+        new Set(
+          filtered.map(
+            (exercise: Exercise) =>
+              exercise.category,
+          ),
+        ),
+      ).sort();
     }
 
-    return strengthExercises.filter(
-      (exercise: Exercise) =>
-        normalize(exercise.category) ===
-        normalize(category),
-    );
-  }, [strengthExercises, category]);
+    if (!equipment) {
+      return Array.from(
+        new Set(
+          filtered.map(
+            (exercise: Exercise) =>
+              exercise.equipment,
+          ),
+        ),
+      ).sort();
+    }
 
-  /* =======================================================
-     RENDER EXERCISE
-  ======================================================= */
+    if (!target) {
+      return Array.from(
+        new Set(
+          filtered.map(
+            (exercise: Exercise) =>
+              exercise.target,
+          ),
+        ),
+      ).sort();
+    }
 
-  const renderExercise = ({
-    item,
-  }: {
-    item: Exercise;
-  }) => {
-    return (
-      <TouchableOpacity
-        style={styles.exerciseCard}
-        activeOpacity={0.85}
-        onPress={() =>
-          navigation.navigate("ExerciseDetail", {
-            exerciseId: item.id,
-          })
-        }
-      >
-        {/* -------------------------------------------------
-            IMAGE
-            ------------------------------------------------- */}
+    return [];
+  }, [
+    filtered,
+    category,
+    equipment,
+    target,
+  ]);
 
-        {item.image ? (
-          <Image
-            source={{ uri: item.image }}
-            style={styles.exerciseImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>
-              {item.name.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-        )}
+  const level = !category
+    ? "body-part"
+    : !equipment
+      ? "equipment"
+      : !target
+        ? "target"
+        : "exercise";
 
-        {/* -------------------------------------------------
-            EXERCISE INFORMATION
-            ------------------------------------------------- */}
+  const title = target
+    ? titleCase(target)
+    : equipment
+      ? titleCase(equipment)
+      : category
+        ? titleCase(category)
+        : "Strength";
 
-        <View style={styles.exerciseInfo}>
-          <Text style={styles.exerciseName}>
-            {titleCase(item.name)}
-          </Text>
+  /*
+   * ==========================================================
+   * EXERCISE LIST
+   * ==========================================================
+   */
 
-          <View style={styles.metaRow}>
-            <View style={styles.metaBadge}>
-              <Text style={styles.metaBadgeText}>
-                {titleCase(item.equipment || "No equipment")}
-              </Text>
-            </View>
-
-            <View style={styles.metaBadge}>
-              <Text style={styles.metaBadgeText}>
-                {titleCase(item.target || "Unknown")}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  /* =======================================================
-     EMPTY STATE
-  ======================================================= */
-
-  if (exercises.length === 0) {
+  if (level === "exercise") {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>
-          {category ? titleCase(category) : "Strength"}
+          {title}
         </Text>
 
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>
-            No exercises found
-          </Text>
+        <Text style={styles.subtitle}>
+          {filtered.length} exercises
+        </Text>
 
-          <Text style={styles.emptyText}>
-            There are no exercises in the dataset for this
-            category.
-          </Text>
-        </View>
+        <FlatList<Exercise>
+          data={filtered}
+          keyExtractor={(item: Exercise) =>
+            String(item.id)
+          }
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          renderItem={({
+            item,
+          }: {
+            item: Exercise;
+          }) => {
+            const localImage =
+              getLocalImage(item.image);
+
+            return (
+              <TouchableOpacity
+                style={styles.exerciseCard}
+                activeOpacity={0.85}
+                onPress={() =>
+                  navigation.navigate(
+                    "ExerciseDetail",
+                    {
+                      exerciseId: item.id,
+                    },
+                  )
+                }
+              >
+                {localImage ? (
+                  <Image
+                    source={localImage}
+                    style={styles.exerciseImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={
+                      styles.imagePlaceholder
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.imagePlaceholderText
+                      }
+                    >
+                      {item.name
+                        .charAt(0)
+                        .toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+
+                <View
+                  style={styles.exerciseInfo}
+                >
+                  <Text
+                    style={styles.exerciseName}
+                    numberOfLines={2}
+                  >
+                    {titleCase(item.name)}
+                  </Text>
+
+                  <View
+                    style={styles.metaRow}
+                  >
+                    <View
+                      style={styles.metaBadge}
+                    >
+                      <Text
+                        style={
+                          styles.metaBadgeText
+                        }
+                      >
+                        {titleCase(
+                          item.equipment ||
+                            "No equipment",
+                        )}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={styles.metaBadge}
+                    >
+                      <Text
+                        style={
+                          styles.metaBadgeText
+                        }
+                      >
+                        {titleCase(
+                          item.target ||
+                            "Unknown",
+                        )}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+        />
       </View>
     );
   }
 
-  /* =======================================================
-     EXERCISE LIST
-  ======================================================= */
+  /*
+   * ==========================================================
+   * CATEGORY / EQUIPMENT / TARGET
+   * ==========================================================
+   */
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        {category ? titleCase(category) : "Strength"}
+        {title}
       </Text>
 
       <Text style={styles.subtitle}>
-        {exercises.length} exercises
+        {level === "body-part"
+          ? "Select body part"
+          : level === "equipment"
+            ? "Select equipment"
+            : "Select target muscle"}
       </Text>
 
-      <FlatList<Exercise>
-        data={exercises}
-        keyExtractor={(item: Exercise) =>
-          String(item.id)
+      <FlatList<string>
+        data={values}
+        keyExtractor={(item: string) =>
+          item
         }
-        renderItem={renderExercise}
-        showsVerticalScrollIndicator={false}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        renderItem={({
+          item,
+        }: {
+          item: string;
+        }) => {
+          const count =
+            filtered.filter(
+              (exercise: Exercise) => {
+                if (
+                  level ===
+                  "body-part"
+                ) {
+                  return (
+                    normalize(
+                      exercise.category,
+                    ) ===
+                    normalize(item)
+                  );
+                }
+
+                if (
+                  level ===
+                  "equipment"
+                ) {
+                  return (
+                    normalize(
+                      exercise.equipment,
+                    ) ===
+                    normalize(item)
+                  );
+                }
+
+                return (
+                  normalize(
+                    exercise.target,
+                  ) ===
+                  normalize(item)
+                );
+              },
+            ).length;
+
+          const nextParams = {
+            category,
+            equipment,
+            target,
+
+            ...(level ===
+            "body-part"
+              ? {
+                  category: item,
+                }
+              : {}),
+
+            ...(level ===
+            "equipment"
+              ? {
+                  equipment: item,
+                }
+              : {}),
+
+            ...(level ===
+            "target"
+              ? {
+                  target: item,
+                }
+              : {}),
+          };
+
+          return (
+            <TouchableOpacity
+              style={styles.card}
+              activeOpacity={0.85}
+              onPress={() =>
+                navigation.navigate(
+                  "StrengthBrowser",
+                  nextParams,
+                )
+              }
+            >
+              <Text
+                style={styles.cardTitle}
+              >
+                {titleCase(item)}
+              </Text>
+
+              <Text
+                style={styles.cardCount}
+              >
+                {count} exercises
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
 }
-
-/* =========================================================
-   STYLES
-========================================================= */
 
 const styles = StyleSheet.create({
   container: {
@@ -204,7 +445,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "800",
     color: "#0F172A",
-    marginBottom: 5,
+    marginBottom: 6,
   },
 
   subtitle: {
@@ -217,9 +458,32 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  /* =======================================================
-     EXERCISE CARD
-  ======================================================= */
+  row: {
+    gap: 14,
+  },
+
+  card: {
+    flex: 1,
+    minHeight: 110,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 18,
+    justifyContent: "center",
+    marginBottom: 14,
+    elevation: 2,
+  },
+
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0F172A",
+  },
+
+  cardCount: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#64748B",
+  },
 
   exerciseCard: {
     backgroundColor: "#FFFFFF",
@@ -231,20 +495,20 @@ const styles = StyleSheet.create({
 
   exerciseImage: {
     width: "100%",
-    height: 190,
-    backgroundColor: "#E2E8F0",
+    height: 180,
+    backgroundColor: "#F1F5F9",
   },
 
   imagePlaceholder: {
     width: "100%",
-    height: 190,
+    height: 180,
     backgroundColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
   },
 
   imagePlaceholderText: {
-    fontSize: 56,
+    fontSize: 52,
     fontWeight: "800",
     color: "#64748B",
   },
@@ -262,13 +526,13 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 10,
     gap: 8,
+    marginTop: 10,
   },
 
   metaBadge: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
@@ -277,30 +541,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#475569",
-  },
-
-  /* =======================================================
-     EMPTY STATE
-  ======================================================= */
-
-  emptyContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 30,
-  },
-
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#0F172A",
-    marginBottom: 8,
-  },
-
-  emptyText: {
-    fontSize: 14,
-    color: "#64748B",
-    textAlign: "center",
-    lineHeight: 21,
   },
 });
