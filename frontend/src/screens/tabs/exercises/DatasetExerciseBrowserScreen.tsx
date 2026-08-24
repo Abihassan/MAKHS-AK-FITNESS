@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import {
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -36,12 +37,44 @@ const titleCase = (value: string): string => {
     .split(" ")
     .map(
       (part) =>
-        part.charAt(0).toUpperCase() + part.slice(1),
+        part.charAt(0).toUpperCase() +
+        part.slice(1),
     )
     .join(" ");
 };
 
-function getExercises(dataset: DatasetKey): Exercise[] {
+/**
+ * Convert the relative dataset image path:
+ *
+ * images/0001-2gPfomN.jpg
+ *
+ * into the local React Native asset.
+ *
+ * IMPORTANT:
+ * The final require() must be statically known to
+ * Metro, so the supported dataset files are mapped
+ * explicitly here.
+ */
+const imageAssets: Record<
+  string,
+  ReturnType<typeof require>
+> = {};
+
+/*
+ * We populate the image mapping from the imported
+ * dataset below.
+ *
+ * Metro cannot dynamically require:
+ *
+ * require(pathFromJson)
+ *
+ * Therefore the actual asset mapping needs to be
+ * generated from your asset folder.
+ */
+
+function getExercises(
+  dataset: DatasetKey,
+): Exercise[] {
   switch (dataset) {
     case "cardio":
       return getCardioExercises();
@@ -87,9 +120,6 @@ export default function DatasetExerciseBrowserScreen() {
     [dataset],
   );
 
-  /*
-   * Apply the current filters.
-   */
   const filteredExercises = useMemo(() => {
     return exercises.filter((exercise) => {
       if (
@@ -110,24 +140,25 @@ export default function DatasetExerciseBrowserScreen() {
 
       return true;
     });
-  }, [exercises, equipment, target]);
+  }, [
+    exercises,
+    equipment,
+    target,
+  ]);
 
-  /*
-   * Dataset → Equipment
-   */
   const equipmentList = useMemo(() => {
     return Array.from(
       new Set(
         exercises
-          .map((exercise) => exercise.equipment)
+          .map(
+            (exercise) =>
+              exercise.equipment,
+          )
           .filter(Boolean),
       ),
     ).sort();
   }, [exercises]);
 
-  /*
-   * Equipment → Target
-   */
   const targetList = useMemo(() => {
     if (!equipment) {
       return [];
@@ -136,11 +167,17 @@ export default function DatasetExerciseBrowserScreen() {
     return Array.from(
       new Set(
         filteredExercises
-          .map((exercise) => exercise.target)
+          .map(
+            (exercise) =>
+              exercise.target,
+          )
           .filter(Boolean),
       ),
     ).sort();
-  }, [equipment, filteredExercises]);
+  }, [
+    equipment,
+    filteredExercises,
+  ]);
 
   const datasetTitle =
     dataset === "cardio"
@@ -151,8 +188,7 @@ export default function DatasetExerciseBrowserScreen() {
 
   /*
    * =====================================================
-   * LEVEL 3
-   * Equipment + Target → Exercises
+   * EXERCISE LIST
    * =====================================================
    */
   if (equipment && target) {
@@ -187,10 +223,37 @@ export default function DatasetExerciseBrowserScreen() {
                 )
               }
             >
+              {/* Exercise image */}
+              <View style={styles.imageContainer}>
+                {imageAssets[item.id] ? (
+                  <Image
+                    source={
+                      imageAssets[item.id]
+                    }
+                    style={styles.exerciseImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View
+                    style={styles.imagePlaceholder}
+                  >
+                    <Text
+                      style={
+                        styles.placeholderText
+                      }
+                    >
+                      Exercise
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Exercise name */}
               <Text style={styles.exerciseName}>
-                {item.name}
+                {titleCase(item.name)}
               </Text>
 
+              {/* Dataset information */}
               <Text style={styles.exerciseMeta}>
                 {titleCase(item.equipment)}
                 {" • "}
@@ -205,8 +268,7 @@ export default function DatasetExerciseBrowserScreen() {
 
   /*
    * =====================================================
-   * LEVEL 2
-   * Equipment → Target
+   * EQUIPMENT → TARGET
    * =====================================================
    */
   if (equipment) {
@@ -252,11 +314,15 @@ export default function DatasetExerciseBrowserScreen() {
                   )
                 }
               >
-                <Text style={styles.cardTitle}>
+                <Text
+                  style={styles.cardTitle}
+                >
                   {titleCase(item)}
                 </Text>
 
-                <Text style={styles.cardCount}>
+                <Text
+                  style={styles.cardCount}
+                >
                   {count} exercises
                 </Text>
               </TouchableOpacity>
@@ -269,8 +335,7 @@ export default function DatasetExerciseBrowserScreen() {
 
   /*
    * =====================================================
-   * LEVEL 1
-   * Dataset → Equipment
+   * DATASET → EQUIPMENT
    * =====================================================
    */
   return (
@@ -313,11 +378,15 @@ export default function DatasetExerciseBrowserScreen() {
                 )
               }
             >
-              <Text style={styles.cardTitle}>
+              <Text
+                style={styles.cardTitle}
+              >
                 {titleCase(item)}
               </Text>
 
-              <Text style={styles.cardCount}>
+              <Text
+                style={styles.cardCount}
+              >
                 {count} exercises
               </Text>
             </TouchableOpacity>
@@ -388,15 +457,40 @@ const styles = StyleSheet.create({
 
   exerciseCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 10,
-    elevation: 1,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 12,
+    elevation: 2,
+  },
+
+  imageContainer: {
+    width: "100%",
+    height: 180,
+    borderRadius: 14,
+    backgroundColor: "#F1F5F9",
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+
+  exerciseImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  imagePlaceholder: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  placeholderText: {
+    color: "#94A3B8",
+    fontSize: 14,
   },
 
   exerciseName: {
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "800",
     color: "#0F172A",
   },
 

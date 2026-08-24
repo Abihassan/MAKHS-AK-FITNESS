@@ -1,21 +1,27 @@
-export type LocalizedText = Record<string, string>;
+export type LocalizedText = Record<
+  string,
+  string
+>;
 
-export type LocalizedSteps = Record<string, string[]>;
+export type LocalizedSteps = Record<
+  string,
+  string[]
+>;
 
 export interface Exercise {
-  id: string;
+  id: string | number;
   name: string;
+
   category: string;
   body_part: string;
   equipment: string;
-
-  instructions?: LocalizedText;
-  instruction_steps?: LocalizedSteps;
+  target: string;
 
   muscle_group?: string;
   secondary_muscles?: string[];
 
-  target: string;
+  instructions?: LocalizedText;
+  instruction_steps?: LocalizedSteps;
 
   image?: string;
   gif_url?: string;

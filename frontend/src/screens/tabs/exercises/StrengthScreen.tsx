@@ -7,10 +7,15 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getStrengthExercises, uniqueValues } from "../../../data/exerciseData";
+
+import {
+  getStrengthExercises,
+  uniqueValues,
+} from "../../../data/exerciseData";
 
 /* ---------- DATA FROM REAL LOCAL DATASET ---------- */
-const STRENGTH_MUSCLES = uniqueValues(
+
+const STRENGTH_CATEGORIES = uniqueValues(
   getStrengthExercises(),
   "category",
 ).map((category) => ({
@@ -18,7 +23,8 @@ const STRENGTH_MUSCLES = uniqueValues(
   title: category,
 }));
 
-/* ---------- SCREEN MAPPING ---------- */
+/* ---------- SCREEN ---------- */
+
 export default function StrengthScreen() {
   const navigation = useNavigation<any>();
 
@@ -27,12 +33,12 @@ export default function StrengthScreen() {
       <Text style={styles.title}>Strength Training</Text>
 
       <FlatList
-        data={STRENGTH_MUSCLES}
+        data={STRENGTH_CATEGORIES}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
@@ -59,6 +65,8 @@ export default function StrengthScreen() {
   );
 }
 
+/* ---------- STYLES ---------- */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -72,6 +80,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 14,
     color: "#0F172A",
+  },
+
+  listContent: {
+    paddingBottom: 40,
   },
 
   row: {
