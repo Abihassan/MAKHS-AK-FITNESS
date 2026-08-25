@@ -17,177 +17,164 @@ import {
 import {
   getStrengthExercises,
   normalize,
+  titleCase,
 } from "../../../data/exerciseData";
 
-import { Exercise } from "../../../data/exerciseTypes";
+import type {
+  Exercise,
+} from "../../../data/exerciseTypes";
 
-const titleCase = (value: string): string => {
-  return value
-    .split(" ")
-    .map(
-      (part) =>
-        part.charAt(0).toUpperCase() + part.slice(1),
-    )
-    .join(" ");
-};
-
-/*
- * ============================================================
- * LOCAL DATASET IMAGE
- * ============================================================
- *
- * The JSON contains:
- *
- * image: "images/0372-jivWf8n.jpg"
- *
- * The actual file is inside:
- *
- * assets/images/images/
- *
- * React Native cannot dynamically require arbitrary
- * filenames, so the safest offline approach is to use
- * the local asset path only when it is available through
- * the dataset mapping.
- */
-
-const IMAGE_MAP: Record<string, any> = {
-  // Add generated mappings here if needed.
-  //
-  // Example:
-  //
-  // "images/0372-jivWf8n.jpg":
-  //   require("../../../../assets/images/images/0372-jivWf8n.jpg"),
-};
-
-const getLocalImage = (
-  imagePath?: string,
-): any | undefined => {
-  if (!imagePath) {
-    return undefined;
-  }
-
-  return IMAGE_MAP[imagePath];
-};
+import {
+  getExerciseImage,
+} from "../../../data/exerciseMedia";
 
 export default function StrengthBrowserScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
+  const navigation =
+    useNavigation<any>();
 
-  const {
-    category,
-    equipment,
-    target,
-  } = route.params ?? {};
+  const route =
+    useRoute<any>();
 
-  const strength = useMemo(
-    () => getStrengthExercises(),
-    [],
-  );
+  const category =
+    route.params?.category ?? "";
 
-  const filtered = useMemo(() => {
-    return strength.filter(
-      (exercise: Exercise) => {
-        if (
-          category &&
-          normalize(exercise.category) !==
-            normalize(category)
-        ) {
-          return false;
-        }
+  const equipment =
+    route.params?.equipment ?? "";
 
-        if (
-          equipment &&
-          normalize(exercise.equipment) !==
-            normalize(equipment)
-        ) {
-          return false;
-        }
-
-        if (
-          target &&
-          normalize(exercise.target) !==
-            normalize(target)
-        ) {
-          return false;
-        }
-
-        return true;
-      },
-    );
-  }, [
-    strength,
-    category,
-    equipment,
-    target,
-  ]);
+  const target =
+    route.params?.target ?? "";
 
   /*
    * ==========================================================
-   * LEVEL
+   * FILTER EXERCISES
    * ==========================================================
    */
 
-  const values = useMemo(() => {
-    if (!category) {
-      return Array.from(
-        new Set(
-          filtered.map(
-            (exercise: Exercise) =>
+  const filtered =
+    useMemo<Exercise[]>(() => {
+      return getStrengthExercises().filter(
+        (exercise: Exercise) => {
+          if (
+            category &&
+            normalize(
               exercise.category,
-          ),
-        ),
-      ).sort();
-    }
+            ) !==
+              normalize(category)
+          ) {
+            return false;
+          }
 
-    if (!equipment) {
-      return Array.from(
-        new Set(
-          filtered.map(
-            (exercise: Exercise) =>
+          if (
+            equipment &&
+            normalize(
               exercise.equipment,
-          ),
-        ),
-      ).sort();
-    }
+            ) !==
+              normalize(equipment)
+          ) {
+            return false;
+          }
 
-    if (!target) {
-      return Array.from(
-        new Set(
-          filtered.map(
-            (exercise: Exercise) =>
+          if (
+            target &&
+            normalize(
               exercise.target,
-          ),
-        ),
-      ).sort();
-    }
+            ) !==
+              normalize(target)
+          ) {
+            return false;
+          }
 
-    return [];
-  }, [
-    filtered,
-    category,
-    equipment,
-    target,
-  ]);
-
-  const level = !category
-    ? "body-part"
-    : !equipment
-      ? "equipment"
-      : !target
-        ? "target"
-        : "exercise";
-
-  const title = target
-    ? titleCase(target)
-    : equipment
-      ? titleCase(equipment)
-      : category
-        ? titleCase(category)
-        : "Strength";
+          return true;
+        },
+      );
+    }, [
+      category,
+      equipment,
+      target,
+    ]);
 
   /*
    * ==========================================================
-   * EXERCISE LIST
+   * CURRENT LEVEL
+   * ==========================================================
+   */
+
+  const level =
+    !category
+      ? "category"
+      : !equipment
+        ? "equipment"
+        : !target
+          ? "target"
+          : "exercise";
+
+  /*
+   * ==========================================================
+   * VALUES
+   * ==========================================================
+   */
+
+  const values =
+    useMemo<string[]>(() => {
+      if (!category) {
+        return Array.from(
+          new Set(
+            filtered.map(
+              (exercise) =>
+                exercise.category,
+            ),
+          ),
+        ).sort();
+      }
+
+      if (!equipment) {
+        return Array.from(
+          new Set(
+            filtered.map(
+              (exercise) =>
+                exercise.equipment,
+            ),
+          ),
+        ).sort();
+      }
+
+      if (!target) {
+        return Array.from(
+          new Set(
+            filtered.map(
+              (exercise) =>
+                exercise.target,
+            ),
+          ),
+        ).sort();
+      }
+
+      return [];
+    }, [
+      filtered,
+      category,
+      equipment,
+      target,
+    ]);
+
+  /*
+   * ==========================================================
+   * TITLE
+   * ==========================================================
+   */
+
+  const title =
+    target
+      ? titleCase(target)
+      : equipment
+        ? titleCase(equipment)
+        : category
+          ? titleCase(category)
+          : "Strength";
+
+  /*
+   * ==========================================================
+   * EXERCISE LEVEL
    * ==========================================================
    */
 
@@ -204,36 +191,43 @@ export default function StrengthBrowserScreen() {
 
         <FlatList<Exercise>
           data={filtered}
-          keyExtractor={(item: Exercise) =>
-            String(item.id)
+          keyExtractor={(
+            item,
+          ) => String(item.id)}
+          showsVerticalScrollIndicator={
+            false
           }
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            styles.list
+          }
           renderItem={({
             item,
-          }: {
-            item: Exercise;
           }) => {
-            const localImage =
-              getLocalImage(item.image);
+            const image =
+              getExerciseImage(item);
 
             return (
               <TouchableOpacity
-                style={styles.exerciseCard}
+                style={
+                  styles.exerciseCard
+                }
                 activeOpacity={0.85}
                 onPress={() =>
                   navigation.navigate(
                     "ExerciseDetail",
                     {
-                      exerciseId: item.id,
+                      exerciseId:
+                        item.id,
                     },
                   )
                 }
               >
-                {localImage ? (
+                {image ? (
                   <Image
-                    source={localImage}
-                    style={styles.exerciseImage}
+                    source={image}
+                    style={
+                      styles.exerciseImage
+                    }
                     resizeMode="cover"
                   />
                 ) : (
@@ -255,20 +249,30 @@ export default function StrengthBrowserScreen() {
                 )}
 
                 <View
-                  style={styles.exerciseInfo}
+                  style={
+                    styles.exerciseInfo
+                  }
                 >
                   <Text
-                    style={styles.exerciseName}
+                    style={
+                      styles.exerciseName
+                    }
                     numberOfLines={2}
                   >
-                    {titleCase(item.name)}
+                    {titleCase(
+                      item.name,
+                    )}
                   </Text>
 
                   <View
-                    style={styles.metaRow}
+                    style={
+                      styles.metaRow
+                    }
                   >
                     <View
-                      style={styles.metaBadge}
+                      style={
+                        styles.metaBadge
+                      }
                     >
                       <Text
                         style={
@@ -283,7 +287,9 @@ export default function StrengthBrowserScreen() {
                     </View>
 
                     <View
-                      style={styles.metaBadge}
+                      style={
+                        styles.metaBadge
+                      }
                     >
                       <Text
                         style={
@@ -310,6 +316,15 @@ export default function StrengthBrowserScreen() {
    * ==========================================================
    * CATEGORY / EQUIPMENT / TARGET
    * ==========================================================
+   *
+   * IMPORTANT:
+   *
+   * key changes with the level.
+   *
+   * This prevents:
+   *
+   * "Changing numColumns on the fly is not supported."
+   *
    */
 
   return (
@@ -319,7 +334,7 @@ export default function StrengthBrowserScreen() {
       </Text>
 
       <Text style={styles.subtitle}>
-        {level === "body-part"
+        {level === "category"
           ? "Select body part"
           : level === "equipment"
             ? "Select equipment"
@@ -327,81 +342,91 @@ export default function StrengthBrowserScreen() {
       </Text>
 
       <FlatList<string>
+        key={`strength-${level}`}
         data={values}
-        keyExtractor={(item: string) =>
-          item
-        }
         numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={(
+          item,
+        ) => item}
+        columnWrapperStyle={
+          styles.row
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
+        contentContainerStyle={
+          styles.list
+        }
         renderItem={({
           item,
-        }: {
-          item: string;
         }) => {
-          const count =
-            filtered.filter(
-              (exercise: Exercise) => {
-                if (
-                  level ===
-                  "body-part"
-                ) {
-                  return (
-                    normalize(
-                      exercise.category,
-                    ) ===
-                    normalize(item)
-                  );
-                }
+          let count = 0;
 
-                if (
-                  level ===
-                  "equipment"
-                ) {
-                  return (
-                    normalize(
-                      exercise.equipment,
-                    ) ===
-                    normalize(item)
-                  );
-                }
+          if (
+            level === "category"
+          ) {
+            count =
+              filtered.filter(
+                (exercise) =>
+                  normalize(
+                    exercise.category,
+                  ) ===
+                  normalize(item),
+              ).length;
+          }
 
-                return (
+          if (
+            level === "equipment"
+          ) {
+            count =
+              filtered.filter(
+                (exercise) =>
+                  normalize(
+                    exercise.equipment,
+                  ) ===
+                  normalize(item),
+              ).length;
+          }
+
+          if (
+            level === "target"
+          ) {
+            count =
+              filtered.filter(
+                (exercise) =>
                   normalize(
                     exercise.target,
                   ) ===
-                  normalize(item)
-                );
-              },
-            ).length;
+                  normalize(item),
+              ).length;
+          }
 
           const nextParams = {
             category,
             equipment,
             target,
-
-            ...(level ===
-            "body-part"
-              ? {
-                  category: item,
-                }
-              : {}),
-
-            ...(level ===
-            "equipment"
-              ? {
-                  equipment: item,
-                }
-              : {}),
-
-            ...(level ===
-            "target"
-              ? {
-                  target: item,
-                }
-              : {}),
           };
+
+          if (
+            level === "category"
+          ) {
+            nextParams.category =
+              item;
+          }
+
+          if (
+            level === "equipment"
+          ) {
+            nextParams.equipment =
+              item;
+          }
+
+          if (
+            level === "target"
+          ) {
+            nextParams.target =
+              item;
+          }
 
           return (
             <TouchableOpacity
@@ -415,13 +440,17 @@ export default function StrengthBrowserScreen() {
               }
             >
               <Text
-                style={styles.cardTitle}
+                style={
+                  styles.cardTitle
+                }
               >
                 {titleCase(item)}
               </Text>
 
               <Text
-                style={styles.cardCount}
+                style={
+                  styles.cardCount
+                }
               >
                 {count} exercises
               </Text>
@@ -432,6 +461,10 @@ export default function StrengthBrowserScreen() {
     </View>
   );
 }
+
+/* ============================================================
+   STYLES
+============================================================ */
 
 const styles = StyleSheet.create({
   container: {
@@ -445,7 +478,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "800",
     color: "#0F172A",
-    marginBottom: 6,
+    marginBottom: 5,
   },
 
   subtitle: {
@@ -495,20 +528,20 @@ const styles = StyleSheet.create({
 
   exerciseImage: {
     width: "100%",
-    height: 180,
-    backgroundColor: "#F1F5F9",
+    height: 190,
+    backgroundColor: "#E2E8F0",
   },
 
   imagePlaceholder: {
     width: "100%",
-    height: 180,
+    height: 190,
     backgroundColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
   },
 
   imagePlaceholderText: {
-    fontSize: 52,
+    fontSize: 56,
     fontWeight: "800",
     color: "#64748B",
   },

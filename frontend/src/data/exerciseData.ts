@@ -32,6 +32,45 @@ export function normalize(
 
 /**
  * ============================================================
+ * TITLE CASE
+ * ============================================================
+ *
+ * Examples:
+ *
+ * "barbell bench press"
+ * -> "Barbell Bench Press"
+ *
+ * "body weight"
+ * -> "Body Weight"
+ *
+ * "abs"
+ * -> "Abs"
+ */
+
+export function titleCase(
+  value:
+    | string
+    | null
+    | undefined,
+): string {
+  if (!value) {
+    return "Not available";
+  }
+
+  return value
+    .trim()
+    .split(/\s+/)
+    .map(
+      (part: string) =>
+        part.charAt(0).toUpperCase() +
+        part.slice(1),
+    )
+    .join(" ");
+}
+
+
+/**
+ * ============================================================
  * ALL EXERCISES
  * ============================================================
  */
@@ -45,13 +84,6 @@ export function getAllExercises(): Exercise[] {
  * ============================================================
  * FIND EXERCISE BY ID
  * ============================================================
- *
- * IMPORTANT:
- *
- * Strength, Cardio, Core/Abs and No Equipment all come from
- * the same EXERCISES dataset.
- *
- * Therefore one lookup is enough.
  */
 
 export function getExerciseById(
@@ -137,9 +169,6 @@ export function getExercisesByTarget(
  * ============================================================
  * STRENGTH
  * ============================================================
- *
- * Strength exercises are identified using body-part
- * categories.
  */
 
 const STRENGTH_CATEGORIES = [
@@ -175,10 +204,6 @@ export function getStrengthExercises(
           exercise.category,
         );
 
-      /**
-       * Make sure the exercise belongs to
-       * the strength/body-part dataset.
-       */
       if (
         !STRENGTH_CATEGORIES.includes(
           exerciseCategory,
@@ -187,9 +212,6 @@ export function getStrengthExercises(
         return false;
       }
 
-      /**
-       * Category filter.
-       */
       if (
         category &&
         exerciseCategory !==
@@ -198,9 +220,6 @@ export function getStrengthExercises(
         return false;
       }
 
-      /**
-       * Equipment filter.
-       */
       if (
         equipment &&
         normalize(
@@ -235,14 +254,6 @@ export function getCardioExercises(): Exercise[] {
  * ============================================================
  * CORE / ABS
  * ============================================================
- *
- * Core/Abs is represented by:
- *
- * category = waist
- *
- * OR
- *
- * target = abs
  */
 
 export function getCoreAbsExercises(): Exercise[] {
@@ -285,15 +296,10 @@ export function uniqueValues(
     | Exercise[],
   field?: keyof Exercise,
 ): string[] {
+
   /**
    * ----------------------------------------------------------
    * SIMPLE STRING ARRAY
-   *
-   * uniqueValues([
-   *   "back",
-   *   "chest",
-   *   "back"
-   * ])
    * ----------------------------------------------------------
    */
 
@@ -327,11 +333,6 @@ export function uniqueValues(
   /**
    * ----------------------------------------------------------
    * EXERCISE FIELD
-   *
-   * uniqueValues(
-   *   exercises,
-   *   "category"
-   * )
    * ----------------------------------------------------------
    */
 
