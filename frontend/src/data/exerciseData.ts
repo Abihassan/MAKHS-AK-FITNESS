@@ -1,15 +1,8 @@
 import exercisesJson from "../../data/exercises.json";
 import { Exercise } from "./exerciseTypes";
 
-/**
- * ============================================================
- * COMPLETE LOCAL EXERCISE DATASET
- * ============================================================
- */
-
 export const EXERCISES: Exercise[] =
   exercisesJson as Exercise[];
-
 
 /**
  * ============================================================
@@ -29,44 +22,30 @@ export function normalize(
     .toLowerCase();
 }
 
-
 /**
  * ============================================================
  * TITLE CASE
  * ============================================================
- *
- * Examples:
- *
- * "barbell bench press"
- * -> "Barbell Bench Press"
- *
- * "body weight"
- * -> "Body Weight"
- *
- * "abs"
- * -> "Abs"
  */
 
 export function titleCase(
-  value:
-    | string
-    | null
-    | undefined,
+  value: string | null | undefined,
 ): string {
   if (!value) {
     return "Not available";
   }
 
-  return value
+  return String(value)
     .trim()
     .split(/\s+/)
     .map(
-      (part: string) =>
+      (part) =>
         part.charAt(0).toUpperCase() +
         part.slice(1),
     )
     .join(" ");
 }
+
 
 
 /**

@@ -6,50 +6,15 @@ import type {
   Exercise,
 } from "./exerciseTypes";
 
-/*
- * ============================================================
- * LOCAL EXERCISE MEDIA
- * ============================================================
- *
- * IMPORTANT:
- *
- * React Native / Metro cannot dynamically do:
- *
- * require(`../../assets/images/images/${filename}`)
- *
- * Therefore the asset paths have to be statically known.
- *
- * The maps below are where the generated local assets belong.
- * ============================================================
- */
+import {
+  EXERCISE_IMAGES,
+  EXERCISE_GIFS,
+} from "./exerciseAssets";
 
-const IMAGE_ASSETS: Record<
-  string,
-  ImageSourcePropType
-> = {
-  /*
-   * Example:
-   *
-   * "images/0001-2gPfomN.jpg":
-   *   require("../../assets/images/images/0001-2gPfomN.jpg"),
-   */
-};
 
-const GIF_ASSETS: Record<
-  string,
-  ImageSourcePropType
-> = {
-  /*
-   * Example:
-   *
-   * "videos/0001-2gPfomN.gif":
-   *   require("../../assets/videos/0001-2gPfomN.gif"),
-   */
-};
-
-/*
+/**
  * ============================================================
- * PATH NORMALIZATION
+ * NORMALIZE MEDIA PATH
  * ============================================================
  */
 
@@ -65,48 +30,127 @@ function normalizeMediaPath(
 
   return value
     .replace(/\\/g, "/")
-    .replace(/^\.?\//, "")
     .trim();
 }
 
-/*
+
+/**
  * ============================================================
  * GET IMAGE
  * ============================================================
+ *
+ * Dataset example:
+ *
+ * image:
+ * images/0001-2gPfomN.jpg
+ *
+ * We extract:
+ *
+ * 0001-2gPfomN.jpg
+ *
+ * and find it in the generated asset map.
  */
 
 export function getExerciseImage(
   exercise: Exercise,
 ): ImageSourcePropType | null {
-  const path =
-    normalizeMediaPath(
-      exercise.image,
-    );
+  const path = normalizeMediaPath(
+    exercise.image,
+  );
 
   if (!path) {
     return null;
   }
 
-  return IMAGE_ASSETS[path] ?? null;
+  const filename =
+    path.split("/").pop() ?? "";
+
+  return (
+    EXERCISE_IMAGES[filename] ??
+    null
+  );
 }
 
-/*
+
+/**
  * ============================================================
  * GET GIF
  * ============================================================
+ *
+ * Dataset example:
+ *
+ * gif_url:
+ * videos/0001-2gPfomN.gif
+ *
+ * We extract:
+ *
+ * 0001-2gPfomN.gif
+ *
+ * and find it in the generated asset map.
  */
 
 export function getExerciseGif(
   exercise: Exercise,
 ): ImageSourcePropType | null {
-  const path =
-    normalizeMediaPath(
-      exercise.gif_url,
-    );
+  const path = normalizeMediaPath(
+    exercise.gif_url,
+  );
 
   if (!path) {
     return null;
   }
 
-  return GIF_ASSETS[path] ?? null;
+  const filename =
+    path.split("/").pop() ?? "";
+
+  return (
+    EXERCISE_GIFS[filename] ??
+    null
+  );
+}
+
+
+/**
+ * ============================================================
+ * GET IMAGE FILENAME
+ * ============================================================
+ */
+
+export function getExerciseImageFilename(
+  exercise: Exercise,
+): string | null {
+  const path = normalizeMediaPath(
+    exercise.image,
+  );
+
+  if (!path) {
+    return null;
+  }
+
+  return (
+    path.split("/").pop() ?? null
+  );
+}
+
+
+/**
+ * ============================================================
+ * GET GIF FILENAME
+ * ============================================================
+ */
+
+export function getExerciseGifFilename(
+  exercise: Exercise,
+): string | null {
+  const path = normalizeMediaPath(
+    exercise.gif_url,
+  );
+
+  if (!path) {
+    return null;
+  }
+
+  return (
+    path.split("/").pop() ?? null
+  );
 }

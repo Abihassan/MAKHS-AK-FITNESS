@@ -13,34 +13,42 @@ import { useNavigation } from "@react-navigation/native";
 
 import {
   getCoreAbsExercises,
+  titleCase,
 } from "../../../data/exerciseData";
 
 import type { Exercise } from "../../../data/exerciseTypes";
 
-const titleCase = (value: string): string => {
-  return value
-    .split(" ")
-    .map(
-      (part: string) =>
-        part.charAt(0).toUpperCase() + part.slice(1),
-    )
-    .join(" ");
-};
+import {
+  getExerciseImage,
+} from "../../../data/exerciseMedia";
 
 export default function CoreAbsScreen() {
   const navigation = useNavigation<any>();
 
-  const exercises = useMemo<Exercise[]>(() => {
-    return getCoreAbsExercises();
-  }, []);
+  const exercises = useMemo<Exercise[]>(
+    () => {
+      return getCoreAbsExercises();
+    },
+    [],
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Core / Abs</Text>
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <Text style={styles.title}>
+        Core / Abs
+      </Text>
 
       <Text style={styles.subtitle}>
         {exercises.length} exercises
       </Text>
+
+      {/* =====================================================
+          EXERCISE LIST
+      ===================================================== */}
 
       <FlatList<Exercise>
         data={exercises}
@@ -49,59 +57,125 @@ export default function CoreAbsScreen() {
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.exerciseCard}
-            activeOpacity={0.85}
-            onPress={() =>
-              navigation.navigate("ExerciseDetail", {
-                exerciseId: item.id,
-              })
-            }
-          >
-            {item.image ? (
-              <Image
-                source={{ uri: item.image }}
-                style={styles.exerciseImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Text style={styles.imagePlaceholderText}>
-                  {item.name.charAt(0).toUpperCase()}
+        renderItem={({ item }) => {
+          /*
+           * Resolve the dataset image path to the
+           * real local JPG inside:
+           *
+           * assets/images/images/
+           */
+          const localImage =
+            getExerciseImage(item);
+
+          return (
+            <TouchableOpacity
+              style={styles.exerciseCard}
+              activeOpacity={0.85}
+              onPress={() =>
+                navigation.navigate(
+                  "ExerciseDetail",
+                  {
+                    exerciseId: item.id,
+                  },
+                )
+              }
+            >
+              {/* =================================================
+                  LOCAL EXERCISE IMAGE
+              ================================================= */}
+
+              {localImage ? (
+                <Image
+                  source={localImage}
+                  style={styles.exerciseImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View
+                  style={
+                    styles.imagePlaceholder
+                  }
+                >
+                  <Text
+                    style={
+                      styles.imagePlaceholderText
+                    }
+                  >
+                    {item.name
+                      .charAt(0)
+                      .toUpperCase()}
+                  </Text>
+                </View>
+              )}
+
+              {/* =================================================
+                  EXERCISE INFORMATION
+              ================================================= */}
+
+              <View
+                style={styles.exerciseInfo}
+              >
+                <Text
+                  style={
+                    styles.exerciseName
+                  }
+                >
+                  {titleCase(item.name)}
                 </Text>
-              </View>
-            )}
 
-            <View style={styles.exerciseInfo}>
-              <Text style={styles.exerciseName}>
-                {titleCase(item.name)}
-              </Text>
+                {/* =============================================
+                    META
+                ============================================= */}
 
-              <View style={styles.metaRow}>
-                <View style={styles.metaBadge}>
-                  <Text style={styles.metaBadgeText}>
-                    {titleCase(
-                      item.equipment || "No equipment",
-                    )}
-                  </Text>
+                <View
+                  style={styles.metaRow}
+                >
+                  <View
+                    style={
+                      styles.metaBadge
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.metaBadgeText
+                      }
+                    >
+                      {titleCase(
+                        item.equipment ||
+                          "No equipment",
+                      )}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={
+                      styles.metaBadge
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.metaBadgeText
+                      }
+                    >
+                      {titleCase(
+                        item.target ||
+                          "Unknown",
+                      )}
+                    </Text>
+                  </View>
                 </View>
-
-                <View style={styles.metaBadge}>
-                  <Text style={styles.metaBadgeText}>
-                    {titleCase(
-                      item.target || "Unknown",
-                    )}
-                  </Text>
-                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        )}
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
 }
+
+/* ============================================================
+   STYLES
+============================================================ */
 
 const styles = StyleSheet.create({
   container: {

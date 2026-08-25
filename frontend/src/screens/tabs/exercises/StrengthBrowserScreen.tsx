@@ -28,6 +28,7 @@ import {
   getExerciseImage,
 } from "../../../data/exerciseMedia";
 
+
 export default function StrengthBrowserScreen() {
   const navigation =
     useNavigation<any>();
@@ -44,14 +45,13 @@ export default function StrengthBrowserScreen() {
   const target =
     route.params?.target ?? "";
 
-  /*
-   * ==========================================================
-   * FILTER EXERCISES
-   * ==========================================================
-   */
 
-  const filtered =
-    useMemo<Exercise[]>(() => {
+  /* ==========================================================
+     FILTER EXERCISES
+  ========================================================== */
+
+  const exercises = useMemo<Exercise[]>(
+    () => {
       return getStrengthExercises().filter(
         (exercise: Exercise) => {
           if (
@@ -87,17 +87,18 @@ export default function StrengthBrowserScreen() {
           return true;
         },
       );
-    }, [
+    },
+    [
       category,
       equipment,
       target,
-    ]);
+    ],
+  );
 
-  /*
-   * ==========================================================
-   * CURRENT LEVEL
-   * ==========================================================
-   */
+
+  /* ==========================================================
+     CURRENT LEVEL
+  ========================================================== */
 
   const level =
     !category
@@ -108,102 +109,103 @@ export default function StrengthBrowserScreen() {
           ? "target"
           : "exercise";
 
-  /*
-   * ==========================================================
-   * VALUES
-   * ==========================================================
-   */
 
-  const values =
-    useMemo<string[]>(() => {
+  /* ==========================================================
+     VALUES FOR CURRENT LEVEL
+  ========================================================== */
+
+  const values = useMemo<string[]>(
+    () => {
+      let result: string[] = [];
+
       if (!category) {
-        return Array.from(
-          new Set(
-            filtered.map(
-              (exercise) =>
-                exercise.category,
-            ),
-          ),
-        ).sort();
+        result = exercises
+          .map(
+            (exercise) =>
+              exercise.category,
+          )
+          .filter(Boolean);
+      } else if (!equipment) {
+        result = exercises
+          .map(
+            (exercise) =>
+              exercise.equipment,
+          )
+          .filter(Boolean);
+      } else if (!target) {
+        result = exercises
+          .map(
+            (exercise) =>
+              exercise.target,
+          )
+          .filter(Boolean);
       }
 
-      if (!equipment) {
-        return Array.from(
-          new Set(
-            filtered.map(
-              (exercise) =>
-                exercise.equipment,
-            ),
-          ),
-        ).sort();
-      }
-
-      if (!target) {
-        return Array.from(
-          new Set(
-            filtered.map(
-              (exercise) =>
-                exercise.target,
-            ),
-          ),
-        ).sort();
-      }
-
-      return [];
-    }, [
-      filtered,
+      return Array.from(
+        new Set(result),
+      ).sort((a, b) =>
+        a.localeCompare(b),
+      );
+    },
+    [
+      exercises,
       category,
       equipment,
       target,
-    ]);
+    ],
+  );
 
-  /*
-   * ==========================================================
-   * TITLE
-   * ==========================================================
-   */
 
-  const title =
+  /* ==========================================================
+     SCREEN TITLE
+  ========================================================== */
+
+  const screenTitle =
     target
       ? titleCase(target)
       : equipment
         ? titleCase(equipment)
         : category
           ? titleCase(category)
-          : "Strength";
+          : "Strength Training";
 
-  /*
-   * ==========================================================
-   * EXERCISE LEVEL
-   * ==========================================================
-   */
+
+  /* ==========================================================
+     EXERCISE LIST
+  ========================================================== */
 
   if (level === "exercise") {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>
-          {title}
+      <View
+        style={styles.container}
+      >
+        <Text
+          style={styles.title}
+        >
+          {screenTitle}
         </Text>
 
-        <Text style={styles.subtitle}>
-          {filtered.length} exercises
+        <Text
+          style={styles.subtitle}
+        >
+          {exercises.length} exercises
         </Text>
 
         <FlatList<Exercise>
-          data={filtered}
+          data={exercises}
           keyExtractor={(
-            item,
+            item: Exercise,
           ) => String(item.id)}
           showsVerticalScrollIndicator={
             false
           }
           contentContainerStyle={
-            styles.list
+            styles.listContent
           }
           renderItem={({
             item,
           }) => {
-            const image =
+            const localImage =
               getExerciseImage(item);
 
             return (
@@ -222,9 +224,11 @@ export default function StrengthBrowserScreen() {
                   )
                 }
               >
-                {image ? (
+                {/* IMAGE */}
+
+                {localImage ? (
                   <Image
-                    source={image}
+                    source={localImage}
                     style={
                       styles.exerciseImage
                     }
@@ -238,7 +242,7 @@ export default function StrengthBrowserScreen() {
                   >
                     <Text
                       style={
-                        styles.imagePlaceholderText
+                        styles.placeholderText
                       }
                     >
                       {item.name
@@ -247,6 +251,8 @@ export default function StrengthBrowserScreen() {
                     </Text>
                   </View>
                 )}
+
+                {/* INFORMATION */}
 
                 <View
                   style={
@@ -257,7 +263,6 @@ export default function StrengthBrowserScreen() {
                     style={
                       styles.exerciseName
                     }
-                    numberOfLines={2}
                   >
                     {titleCase(
                       item.name,
@@ -281,7 +286,7 @@ export default function StrengthBrowserScreen() {
                       >
                         {titleCase(
                           item.equipment ||
-                            "No equipment",
+                            "Body Weight",
                         )}
                       </Text>
                     </View>
@@ -312,28 +317,24 @@ export default function StrengthBrowserScreen() {
     );
   }
 
-  /*
-   * ==========================================================
-   * CATEGORY / EQUIPMENT / TARGET
-   * ==========================================================
-   *
-   * IMPORTANT:
-   *
-   * key changes with the level.
-   *
-   * This prevents:
-   *
-   * "Changing numColumns on the fly is not supported."
-   *
-   */
+
+  /* ==========================================================
+     CATEGORY / EQUIPMENT / TARGET GRID
+  ========================================================== */
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        {title}
+    <View
+      style={styles.container}
+    >
+      <Text
+        style={styles.title}
+      >
+        {screenTitle}
       </Text>
 
-      <Text style={styles.subtitle}>
+      <Text
+        style={styles.subtitle}
+      >
         {level === "category"
           ? "Select body part"
           : level === "equipment"
@@ -342,11 +343,20 @@ export default function StrengthBrowserScreen() {
       </Text>
 
       <FlatList<string>
-        key={`strength-${level}`}
+        /*
+         * IMPORTANT:
+         *
+         * FlatList does not allow changing
+         * numColumns dynamically.
+         *
+         * The key forces a completely new
+         * FlatList when the level changes.
+         */
+        key={`strength-grid-${level}`}
         data={values}
         numColumns={2}
         keyExtractor={(
-          item,
+          item: string,
         ) => item}
         columnWrapperStyle={
           styles.row
@@ -355,7 +365,7 @@ export default function StrengthBrowserScreen() {
           false
         }
         contentContainerStyle={
-          styles.list
+          styles.listContent
         }
         renderItem={({
           item,
@@ -366,8 +376,10 @@ export default function StrengthBrowserScreen() {
             level === "category"
           ) {
             count =
-              filtered.filter(
-                (exercise) =>
+              exercises.filter(
+                (
+                  exercise,
+                ) =>
                   normalize(
                     exercise.category,
                   ) ===
@@ -379,8 +391,10 @@ export default function StrengthBrowserScreen() {
             level === "equipment"
           ) {
             count =
-              filtered.filter(
-                (exercise) =>
+              exercises.filter(
+                (
+                  exercise,
+                ) =>
                   normalize(
                     exercise.equipment,
                   ) ===
@@ -392,8 +406,10 @@ export default function StrengthBrowserScreen() {
             level === "target"
           ) {
             count =
-              filtered.filter(
-                (exercise) =>
+              exercises.filter(
+                (
+                  exercise,
+                ) =>
                   normalize(
                     exercise.target,
                   ) ===
@@ -401,25 +417,43 @@ export default function StrengthBrowserScreen() {
               ).length;
           }
 
-          const nextParams = {
+
+          /* ================================================
+             NEXT NAVIGATION PARAMS
+          ================================================= */
+
+          const nextParams: {
+            category: string;
+            equipment: string;
+            target: string;
+          } = {
             category,
             equipment,
             target,
           };
+
 
           if (
             level === "category"
           ) {
             nextParams.category =
               item;
+            nextParams.equipment =
+              "";
+            nextParams.target =
+              "";
           }
+
 
           if (
             level === "equipment"
           ) {
             nextParams.equipment =
               item;
+            nextParams.target =
+              "";
           }
+
 
           if (
             level === "target"
@@ -427,6 +461,7 @@ export default function StrengthBrowserScreen() {
             nextParams.target =
               item;
           }
+
 
           return (
             <TouchableOpacity
@@ -439,6 +474,22 @@ export default function StrengthBrowserScreen() {
                 )
               }
             >
+              <View
+                style={
+                  styles.cardIcon
+                }
+              >
+                <Text
+                  style={
+                    styles.cardIconText
+                  }
+                >
+                  {item
+                    .charAt(0)
+                    .toUpperCase()}
+                </Text>
+              </View>
+
               <Text
                 style={
                   styles.cardTitle
@@ -461,6 +512,7 @@ export default function StrengthBrowserScreen() {
     </View>
   );
 }
+
 
 /* ============================================================
    STYLES
@@ -487,7 +539,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  list: {
+  listContent: {
     paddingBottom: 40,
   },
 
@@ -495,28 +547,56 @@ const styles = StyleSheet.create({
     gap: 14,
   },
 
+  /* ==========================================================
+     GRID CARD
+  ========================================================== */
+
   card: {
     flex: 1,
-    minHeight: 110,
+    minHeight: 155,
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
-    padding: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
-    elevation: 2,
+    elevation: 3,
+  },
+
+  cardIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+
+  cardIconText: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#0F172A",
   },
 
   cardTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
+    textAlign: "center",
     color: "#0F172A",
   },
 
   cardCount: {
-    marginTop: 8,
-    fontSize: 13,
+    marginTop: 6,
+    fontSize: 12,
     color: "#64748B",
+    textAlign: "center",
   },
+
+  /* ==========================================================
+     EXERCISE CARD
+  ========================================================== */
 
   exerciseCard: {
     backgroundColor: "#FFFFFF",
@@ -540,7 +620,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  imagePlaceholderText: {
+  placeholderText: {
     fontSize: 56,
     fontWeight: "800",
     color: "#64748B",
@@ -565,7 +645,7 @@ const styles = StyleSheet.create({
 
   metaBadge: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
