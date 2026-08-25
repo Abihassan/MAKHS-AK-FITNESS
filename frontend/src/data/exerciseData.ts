@@ -5,21 +5,11 @@ import { Exercise } from "./exerciseTypes";
  * ============================================================
  * COMPLETE LOCAL EXERCISE DATASET
  * ============================================================
- *
- * Source:
- *     frontend/data/exercises.json
- *
- * This file acts as the data-access layer for the app.
- *
- * The React Native screens should use the functions in this
- * file instead of directly reading exercises.json.
  */
 
-/**
- * Complete exercise dataset.
- */
 export const EXERCISES: Exercise[] =
   exercisesJson as Exercise[];
+
 
 /**
  * ============================================================
@@ -27,21 +17,18 @@ export const EXERCISES: Exercise[] =
  * ============================================================
  */
 
-/**
- * Normalize a value for safe comparisons.
- *
- * Example:
- *
- * "  Back  " -> "back"
- * "BODY WEIGHT" -> "body weight"
- */
 export function normalize(
-  value: string | null | undefined,
+  value:
+    | string
+    | number
+    | null
+    | undefined,
 ): string {
   return String(value ?? "")
     .trim()
     .toLowerCase();
 }
+
 
 /**
  * ============================================================
@@ -49,32 +36,51 @@ export function normalize(
  * ============================================================
  */
 
-/**
- * Get all exercises from the local dataset.
- */
 export function getAllExercises(): Exercise[] {
   return EXERCISES;
 }
 
-/**
- * ============================================================
- * FIND EXERCISE
- * ============================================================
- */
 
 /**
- * Find one exercise by ID.
+ * ============================================================
+ * FIND EXERCISE BY ID
+ * ============================================================
+ *
+ * IMPORTANT:
+ *
+ * Strength, Cardio, Core/Abs and No Equipment all come from
+ * the same EXERCISES dataset.
+ *
+ * Therefore one lookup is enough.
  */
+
 export function getExerciseById(
-  id: string | number,
+  id:
+    | string
+    | number
+    | null
+    | undefined,
 ): Exercise | undefined {
-  const searchId = String(id);
+  if (
+    id === undefined ||
+    id === null
+  ) {
+    return undefined;
+  }
+
+  const searchId = normalize(id);
+
+  if (!searchId) {
+    return undefined;
+  }
 
   return EXERCISES.find(
     (exercise: Exercise) =>
-      String(exercise.id) === searchId,
+      normalize(exercise.id) ===
+      searchId,
   );
 }
+
 
 /**
  * ============================================================
@@ -82,22 +88,6 @@ export function getExerciseById(
  * ============================================================
  */
 
-/**
- * Get exercises by dataset category.
- *
- * Examples:
- *
- * back
- * chest
- * lower arms
- * lower legs
- * neck
- * shoulders
- * upper arms
- * upper legs
- * waist
- * cardio
- */
 export function getExercisesByCategory(
   category: string,
 ): Exercise[] {
@@ -108,15 +98,13 @@ export function getExercisesByCategory(
   );
 }
 
+
 /**
  * ============================================================
  * EQUIPMENT
  * ============================================================
  */
 
-/**
- * Get exercises by equipment.
- */
 export function getExercisesByEquipment(
   equipment: string,
 ): Exercise[] {
@@ -127,15 +115,13 @@ export function getExercisesByEquipment(
   );
 }
 
+
 /**
  * ============================================================
  * TARGET MUSCLE
  * ============================================================
  */
 
-/**
- * Get exercises by target muscle.
- */
 export function getExercisesByTarget(
   target: string,
 ): Exercise[] {
@@ -146,75 +132,89 @@ export function getExercisesByTarget(
   );
 }
 
+
 /**
  * ============================================================
  * STRENGTH
  * ============================================================
+ *
+ * Strength exercises are identified using body-part
+ * categories.
  */
+
+const STRENGTH_CATEGORIES = [
+  "back",
+  "chest",
+  "lower arms",
+  "lower legs",
+  "neck",
+  "shoulders",
+  "upper arms",
+  "upper legs",
+  "waist",
+];
+
 
 /**
  * Get all strength exercises.
  *
- * The dataset does not contain a literal "strength"
- * category.
+ * Optional filters:
  *
- * Strength is represented through these body-part
- * categories.
+ * category
+ * equipment
  */
+
 export function getStrengthExercises(
   category?: string,
   equipment?: string,
 ): Exercise[] {
-  const strengthCategories = [
-    "back",
-    "chest",
-    "lower arms",
-    "lower legs",
-    "neck",
-    "shoulders",
-    "upper arms",
-    "upper legs",
-    "waist",
-  ];
-
   return EXERCISES.filter(
     (exercise: Exercise) => {
-      /**
-       * First make sure this is a strength/body-part
-       * exercise and not cardio.
-       */
-      const isStrength =
-        strengthCategories.includes(
-          normalize(exercise.category),
+      const exerciseCategory =
+        normalize(
+          exercise.category,
         );
 
-      if (!isStrength) {
+      /**
+       * Make sure the exercise belongs to
+       * the strength/body-part dataset.
+       */
+      if (
+        !STRENGTH_CATEGORIES.includes(
+          exerciseCategory,
+        )
+      ) {
         return false;
       }
 
       /**
-       * Optional category filter.
+       * Category filter.
        */
-      const matchesCategory =
-        !category ||
-        normalize(exercise.category) ===
-          normalize(category);
+      if (
+        category &&
+        exerciseCategory !==
+          normalize(category)
+      ) {
+        return false;
+      }
 
       /**
-       * Optional equipment filter.
+       * Equipment filter.
        */
-      const matchesEquipment =
-        !equipment ||
-        normalize(exercise.equipment) ===
-          normalize(equipment);
+      if (
+        equipment &&
+        normalize(
+          exercise.equipment,
+        ) !== normalize(equipment)
+      ) {
+        return false;
+      }
 
-      return (
-        matchesCategory &&
-        matchesEquipment
-      );
+      return true;
     },
   );
 }
+
 
 /**
  * ============================================================
@@ -222,37 +222,39 @@ export function getStrengthExercises(
  * ============================================================
  */
 
-/**
- * Get all cardio exercises.
- */
 export function getCardioExercises(): Exercise[] {
-  return getExercisesByCategory("cardio");
+  return EXERCISES.filter(
+    (exercise: Exercise) =>
+      normalize(exercise.category) ===
+      "cardio",
+  );
 }
+
 
 /**
  * ============================================================
  * CORE / ABS
  * ============================================================
- */
-
-/**
- * Get Core / Abs exercises.
  *
- * The dataset uses:
+ * Core/Abs is represented by:
  *
  * category = waist
  *
- * and/or:
+ * OR
  *
  * target = abs
  */
+
 export function getCoreAbsExercises(): Exercise[] {
   return EXERCISES.filter(
     (exercise: Exercise) =>
-      normalize(exercise.category) === "waist" ||
-      normalize(exercise.target) === "abs",
+      normalize(exercise.category) ===
+        "waist" ||
+      normalize(exercise.target) ===
+        "abs",
   );
 }
+
 
 /**
  * ============================================================
@@ -260,13 +262,6 @@ export function getCoreAbsExercises(): Exercise[] {
  * ============================================================
  */
 
-/**
- * Get exercises that require no equipment.
- *
- * In the dataset these are represented as:
- *
- * equipment = body weight
- */
 export function getNoEquipmentExercises(): Exercise[] {
   return EXERCISES.filter(
     (exercise: Exercise) =>
@@ -275,79 +270,52 @@ export function getNoEquipmentExercises(): Exercise[] {
   );
 }
 
+
 /**
  * ============================================================
  * UNIQUE VALUES
  * ============================================================
  */
 
-/**
- * Get unique values from a simple string array.
- *
- * Example:
- *
- * uniqueValues([
- *   "back",
- *   "chest",
- *   "back",
- * ]);
- *
- * Result:
- *
- * [
- *   "back",
- *   "chest",
- * ]
- *
- *
- * OR
- *
- * Get unique values directly from exercises.
- *
- * Example:
- *
- * uniqueValues(
- *   getStrengthExercises(),
- *   "category",
- * );
- *
- * Result:
- *
- * [
- *   "back",
- *   "chest",
- *   "shoulders",
- *   ...
- * ]
- */
 export function uniqueValues(
-  values: Array<
-    string | null | undefined
-  > | Exercise[],
+  values:
+    | Array<
+        string | null | undefined
+      >
+    | Exercise[],
   field?: keyof Exercise,
 ): string[] {
   /**
    * ----------------------------------------------------------
-   * CASE 1
+   * SIMPLE STRING ARRAY
    *
-   * uniqueValues(["back", "chest", "back"])
+   * uniqueValues([
+   *   "back",
+   *   "chest",
+   *   "back"
+   * ])
    * ----------------------------------------------------------
    */
+
   if (!field) {
     return Array.from(
       new Set(
-        (values as Array<
-          string | null | undefined
-        >)
+        (
+          values as Array<
+            string | null | undefined
+          >
+        )
           .filter(
             (
               value,
             ): value is string =>
-              typeof value === "string" &&
-              value.trim().length > 0,
+              value !== null &&
+              value !== undefined &&
+              String(value).trim()
+                .length > 0,
           )
           .map((value) =>
-            value.trim(),
+            String(value).trim(),
           ),
       ),
     ).sort((a, b) =>
@@ -355,13 +323,18 @@ export function uniqueValues(
     );
   }
 
+
   /**
    * ----------------------------------------------------------
-   * CASE 2
+   * EXERCISE FIELD
    *
-   * uniqueValues(exercises, "category")
+   * uniqueValues(
+   *   exercises,
+   *   "category"
+   * )
    * ----------------------------------------------------------
    */
+
   return Array.from(
     new Set(
       (values as Exercise[])
@@ -372,12 +345,14 @@ export function uniqueValues(
         .filter(
           (
             value,
-          ): value is string =>
-            typeof value === "string" &&
-            value.trim().length > 0,
+          ): value is string | number =>
+            value !== null &&
+            value !== undefined &&
+            String(value).trim()
+              .length > 0,
         )
         .map((value) =>
-          value.trim(),
+          String(value).trim(),
         ),
     ),
   ).sort((a, b) =>
@@ -385,15 +360,13 @@ export function uniqueValues(
   );
 }
 
+
 /**
  * ============================================================
  * UNIQUE CATEGORIES
  * ============================================================
  */
 
-/**
- * Get every unique category in the dataset.
- */
 export function getCategories(): string[] {
   return uniqueValues(
     EXERCISES,
@@ -401,15 +374,13 @@ export function getCategories(): string[] {
   );
 }
 
+
 /**
  * ============================================================
  * UNIQUE EQUIPMENT
  * ============================================================
  */
 
-/**
- * Get every unique equipment value in the dataset.
- */
 export function getEquipment(): string[] {
   return uniqueValues(
     EXERCISES,
@@ -417,15 +388,13 @@ export function getEquipment(): string[] {
   );
 }
 
+
 /**
  * ============================================================
  * UNIQUE TARGET MUSCLES
  * ============================================================
  */
 
-/**
- * Get every unique target muscle in the dataset.
- */
 export function getTargets(): string[] {
   return uniqueValues(
     EXERCISES,

@@ -25,37 +25,9 @@ import RehabScreen from "../screens/tabs/exercises/RehabScreen";
 import ChallengesScreen from "../screens/tabs/exercises/ChallengesScreen";
 
 /* 🔥 STRENGTH FLOW SCREENS */
-import ChestVariationsScreen from "../screens/tabs/exercises/strength/ChestVariationsScreen";
-import ChestExercisesScreen from "../screens/tabs/exercises/strength/ChestExercisesScreen";
 import ExerciseDetailScreen from "../screens/tabs/exercises/strength/ExerciseDetailScreen";
 import StrengthBrowserScreen from "../screens/tabs/exercises/StrengthBrowserScreen";
 import DatasetExerciseBrowserScreen from "../screens/tabs/exercises/DatasetExerciseBrowserScreen";
-
-
-/* 🔥 STRENGTH FLOW SCREENS */
-import backVariationsScreen from "../screens/tabs/exercises/strength/backVariationsScreen";
-import backExercisesScreen from "../screens/tabs/exercises/strength/backExercisesScreen";
-
-
-/* 🔥 STRENGTH FLOW SCREENS */
-import shouldersVariationsScreen from "../screens/tabs/exercises/strength/shouldersVariationsScreen";
-import shouldersExercisesScreen from "../screens/tabs/exercises/strength/shouldersExercisesScreen";
-
-
-/* 🔥 STRENGTH FLOW SCREENS */
-import legsVariationsScreen from "../screens/tabs/exercises/strength/legsVariationsScreen";
-import legsExercisesScreen from "../screens/tabs/exercises/strength/legsExercisesScreen";
-
-
-
-/* 🔥 STRENGTH FLOW SCREENS */
-import bicepsVariationsScreen from "../screens/tabs/exercises/strength/bicepsVariationsScreen";
-import bicepsExercisesScreen from "../screens/tabs/exercises/strength/bicepsExercisesScreen";
-
-
-/* 🔥 STRENGTH FLOW SCREENS */
-import tricepsVariationsScreen from "../screens/tabs/exercises/strength/tricepsVariationsScreen";
-import tricepsExercisesScreen from "../screens/tabs/exercises/strength/tricepsExercisesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -114,69 +86,8 @@ export default function ExerciseStack() {
       <Stack.Screen name="Rehab" component={RehabScreen} />
       <Stack.Screen name="Challenges" component={ChallengesScreen} />
 
-      {/* 🔥 STRENGTH → CHEST FLOW */}
-      <Stack.Screen
-        name="ChestVariations"
-        component={ChestVariationsScreen}
-      />
-      <Stack.Screen
-        name="ChestExercises"
-        component={ChestExercisesScreen}
-      />
-      <Stack.Screen
-        name="ExerciseDetail"
-        component={ExerciseDetailScreen}
-      />
-
-      {/* 🔥 STRENGTH → BACK FLOW */}
-      <Stack.Screen
-        name="backVariations"
-        component={backVariationsScreen}
-      />
-      <Stack.Screen
-        name="backExercises"
-        component={backExercisesScreen}
-      />
-
-      {/* 🔥 STRENGTH → SHOULDERS FLOW */}
-      <Stack.Screen
-        name="shouldersVariations"
-        component={shouldersVariationsScreen}
-      />
-      <Stack.Screen
-        name="shoulderstExercises"
-        component={shouldersExercisesScreen}
-      />
-
-      {/* 🔥 STRENGTH → LEGS FLOW */}
-      <Stack.Screen
-        name="legsVariations"
-        component={legsVariationsScreen}
-      />
-      <Stack.Screen
-        name="legsExercises"
-        component={legsExercisesScreen}
-      />
-
-      {/* 🔥 STRENGTH → BICEPS FLOW */}
-      <Stack.Screen
-        name="bicepsVariations"
-        component={bicepsVariationsScreen}
-      />
-      <Stack.Screen
-        name="bicepsExercises"
-        component={bicepsExercisesScreen}
-      />
-
-      {/* 🔥 STRENGTH → TRICEPS FLOW */}
-      <Stack.Screen
-        name="tricepsVariations"
-        component={tricepsVariationsScreen}
-      />
-      <Stack.Screen
-        name="tricepsExercises"
-        component={tricepsExercisesScreen}
-      />
+      
+      <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
 
 
     </Stack.Navigator>
