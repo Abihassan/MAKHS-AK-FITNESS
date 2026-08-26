@@ -28,12 +28,10 @@ import type {
 } from "../../../data/exerciseTypes";
 
 import {
-  getExerciseGif,
   getExerciseImage,
 } from "../../../data/exerciseMedia";
 
 import {
-  getFavoriteExercises,
   isFavorite,
   toggleFavorite,
 } from "../../../data/favoriteExercises";
@@ -86,11 +84,6 @@ export default function CardioScreen() {
   ) => {
     toggleFavorite(item);
 
-    /*
-     * Force this screen to re-render so the
-     * star immediately changes from ☆ to ★
-     * or ★ to ☆.
-     */
     setFavoriteVersion(
       (value) => value + 1,
     );
@@ -149,11 +142,8 @@ export default function CardioScreen() {
         }) => {
 
           /* ==================================================
-             LOCAL MEDIA
+             LOCAL IMAGE
           ================================================== */
-
-          const localGif =
-            getExerciseGif(item);
 
           const localImage =
             getExerciseImage(item);
@@ -168,12 +158,9 @@ export default function CardioScreen() {
 
 
           /*
-           * Prevent TypeScript from considering
-           * favoriteVersion unused.
-           *
-           * Changing this value forces the list
-           * item to re-render after a favorite
-           * is toggled.
+           * Changing favoriteVersion forces
+           * this screen to render again so the
+           * star updates immediately.
            */
           void favoriteVersion;
 
@@ -198,22 +185,10 @@ export default function CardioScreen() {
             >
 
               {/* ==============================================
-                  IMAGE / GIF
+                  LOCAL EXERCISE IMAGE
               ============================================== */}
 
-              {localGif ? (
-                <Image
-                  source={
-                    localGif
-                  }
-
-                  style={
-                    styles.exerciseImage
-                  }
-
-                  resizeMode="contain"
-                />
-              ) : localImage ? (
+              {localImage ? (
                 <Image
                   source={
                     localImage
@@ -245,7 +220,7 @@ export default function CardioScreen() {
 
 
               {/* ==============================================
-                  FAVORITE STAR BUTTON
+                  FAVORITE STAR
               ============================================== */}
 
               <TouchableOpacity
@@ -253,7 +228,7 @@ export default function CardioScreen() {
                   styles.favoriteButton
                 }
 
-                activeOpacity={0.8}
+                activeOpacity={0.7}
 
                 onPress={() =>
                   handleToggleFavorite(
@@ -424,7 +399,7 @@ const styles = StyleSheet.create({
 
 
   /* ==========================================================
-     EXERCISE IMAGE / GIF
+     EXERCISE IMAGE
   ========================================================== */
 
   exerciseImage: {
@@ -454,40 +429,24 @@ const styles = StyleSheet.create({
 
 
   /* ==========================================================
-     FAVORITE BUTTON
+     FAVORITE STAR
+     
+     IMPORTANT:
+     No circle
+     No background
+     No border
+     No shadow
+     No elevation
   ========================================================== */
 
   favoriteButton: {
     position: "absolute",
-
     top: 12,
     right: 12,
-
-    width: 46,
-    height: 46,
-
-    borderRadius: 23,
-
-    backgroundColor:
-      "rgba(255,255,255,0.96)",
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    elevation: 4,
-
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
   },
 
   favoriteIcon: {
-    fontSize: 29,
-    lineHeight: 32,
+    fontSize: 30,
     fontWeight: "800",
   },
 
