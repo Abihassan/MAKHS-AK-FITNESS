@@ -873,5 +873,5 @@ The application should remain simple, fast, reliable, accessible, and motivating
 Project: Daily Tracker App
 Version: 1.0.0
 Status: In Development
-Platform: Web / Mobile
+Platform: Mobile
 License: To be determined
