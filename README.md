@@ -762,30 +762,7 @@ git add .
 git commit -m "Add habit streak tracking"
 git push origin feature/habit-streaks
 
-🚀 Future Enhancements
 
-Potential future features include:
-
-AI-powered habit recommendations
-Habit difficulty scoring
-Smart reminders
-Weekly productivity reports
-Monthly reports
-Achievement badges
-Gamification
-Leaderboards
-Social accountability
-Habit templates
-Cloud synchronization
-Offline support
-Progressive Web App support
-Mobile applications
-Data visualization
-Voice-based habit entry
-Calendar integration
-Wearable/device integrations
-Automated backup
-Multiple profiles
 🗺️ Roadmap
 Phase 1 — MVP
  User authentication
