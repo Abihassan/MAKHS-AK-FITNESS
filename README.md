@@ -845,10 +845,3 @@ Help users turn everyday intentions into consistent habits.
 
 The application should remain simple, fast, reliable, accessible, and motivating, while providing enough analytics to help users understand their progress and improve their daily routines.
 
-📌 Status
-
-Project: Daily Tracker App
-Version: 1.0.0
-Status: In Development
-Platform: Web / Mobile
-License: To be determined
